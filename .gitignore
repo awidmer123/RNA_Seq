@@ -1,0 +1,21 @@
+# Raw data & results
+data/raw_data/**/
+*.fastq
+*.fastq.gz
+results/
+logs/
+
+# Bioinformatics outputs (falls später)
+*.bam
+*.bai
+*.sam
+*.fq
+*.fq.gz
+*.vcf
+*.vcf.gz
+
+# System/Editor
+.Rhistory
+.Rproj.user/
+.DS_Store
+.vscode/
