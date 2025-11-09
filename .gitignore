@@ -5,7 +5,7 @@ data/raw_data/**/
 results/
 logs/
 
-# Bioinformatics outputs (falls später)
+# Bioinformatics outputs (for later)
 *.bam
 *.bai
 *.sam

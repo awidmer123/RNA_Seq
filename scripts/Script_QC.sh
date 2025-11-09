@@ -8,7 +8,7 @@
 #SBATCH --partition=pibu_el8
 
 #Set paths
-CONTAINER="/container/apptainer/fastqc-0.12.1.sif"
+CONTAINER="/containers/apptainer/fastqc-0.12.1.sif"
 INPUT_DIR="/data/users/awidmer/RNA_Seq/data/raw_data/reads_Lung"
 OUTPUT_DIR="/data/users/awidmer/RNA_Seq/results/QC"
 
