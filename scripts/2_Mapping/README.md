@@ -1,5 +1,5 @@
 
-##Running order of involved scripts
+## Running order of involved scripts
 
 1. sbatch index.slurm
 2. sbatch hisat2_process.slurm
