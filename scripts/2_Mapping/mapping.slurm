@@ -2,7 +2,7 @@
 
 #SBATCH --mail-type=end,error
 #SBATCH --mail-user=andri.widmer@students.unibe.ch
-#SBATCH --output=/data/users/awidmer/RNA_Seq/results/mapping/slurm-alignment-mapping-%j.out
+#SBATCH --output=/data/users/awidmer/RNA_Seq/logs/2_Mapping/mapping/slurm-alignment-mapping-%j.out
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=8G
 #SBATCH --nodes=1
