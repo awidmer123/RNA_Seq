@@ -1,6 +1,6 @@
 ## Mapping — HISAT2 & Samtools Pipeline
 
-This directory contains the scripts used to run the RNA-seq mapping workflow on the SLURM cluster. The pipeline extracts splice/exon information, builds the HISAT2 genome index, aligns paired-end FASTQ reads, and converts the resulting SAM files into sorted/indexed BAM files using samtools inside an Apptainer container.
+This directory contains the scripts used to run the RNA-seq mapping workflow. The pipeline extracts splice/exon information, builds the HISAT2 genome index, aligns paired-end FASTQ reads, and converts the resulting SAM files into sorted/indexed BAM files using samtools inside an Apptainer container.
 
 ## Scripts overview
 
