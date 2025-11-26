@@ -1,4 +1,6 @@
 
+### 5. Exploratory data analysis
+
 #MAIN GOAL: finding the genes that lead to differences between WT and our sampels etc.........
 
 
@@ -10,6 +12,7 @@ install.packages("pheatmap")
 library(ggplot2)
 library(DESeq2)
 library(pheatmap)
+library(ggplot2)
 
 #reading in the necessary files
 counts <- read.table("Desktop/UNIFR/2_Bioinf/RNA_Sequencing/counts.txt", header = TRUE, row.names = 1)
@@ -67,6 +70,50 @@ pheatmap(
 
 
 
+### 6. Differential expression analysis
+
+WT_con_VS_WT_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_WT_Control", "Lung_WT_Case"))
+
+DKO_con_VS_DKO_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_DKO_Control", "Lung_DKO_Case"))
 
 
+#creating volcano plot for the differential gene expression 
+
+# Take one results object (switch the input to make it for the other groups as well.)
+res <- WT_con_VS_WT_case
+
+# Convert to data.frame and keep gene names
+res_df <- as.data.frame(res)
+res_df$gene <- rownames(res_df)
+
+# Remove rows with NA padj
+res_df <- res_df[!is.na(res_df$padj), ]
+
+# Define significance + direction
+res_df$regulation <- "NS"
+res_df$regulation[res_df$padj < 0.05 & res_df$log2FoldChange > 0] <- "Up"
+res_df$regulation[res_df$padj < 0.05 & res_df$log2FoldChange < 0] <- "Down"
+
+# Volcano plot
+ggplot(res_df, aes(x = log2FoldChange, y = -log10(padj), color = regulation)) +
+  geom_point(alpha = 0.6, size = 1.2) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed") +
+  scale_color_manual(values = c("Down" = "blue", "NS" = "grey70", "Up" = "red")) +
+  labs(
+    title = "Volcano plot: Lung_WT_Control vs Lung_WT_Case",
+    x = "log2 fold change (Case vs Control)",
+    y = "-log10(adjusted p-value)",
+    color = "Regulation"
+  ) +
+  theme_minimal()
+
+
+
+# DE genes (padj < 0.05)
+de_genes <- res_df[res_df$padj < 0.05, ]
+
+nrow(de_genes)                      # number DE-Gene
+sum(de_genes$log2FoldChange > 0)    # Up-regulated
+sum(de_genes$log2FoldChange < 0)    # Down-regulated
 
