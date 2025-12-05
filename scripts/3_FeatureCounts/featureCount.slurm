@@ -12,7 +12,7 @@
 
 CONTAINER=/containers/apptainer/subread_2.0.6.sif
 ANNOTATION=data/raw_data/mouse_genome/Mus_musculus.GRCm39.115.gtf
-OUT_FILE=results/counts/counts.txt
+OUT_FILE=results/counts/counts2.txt
 
 apptainer exec $CONTAINER featureCounts \
   -p --countReadPairs \
@@ -22,6 +22,6 @@ apptainer exec $CONTAINER featureCounts \
   -g gene_id \
   -a ${ANNOTATION} \
   -o ${OUT_FILE} \
-  results/bam/*.bam
+  results/bam2/*.bam
 
 
