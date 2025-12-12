@@ -14,14 +14,14 @@ library(DESeq2)
 library(pheatmap)
 library(ggplot2)
 
+
 #reading in the necessary files
-counts <- read.table("Desktop/UNIFR/2_Bioinf/RNA_Sequencing/counts.txt", header = TRUE, row.names = 1)
-groups_info <- read.table("Desktop/UNIFR/2_Bioinf/RNA_Sequencing/groups_info.txt")
+counts <- read.table("counts2.txt", header = TRUE, row.names = 1) #"counts.txt" for former document (sample SRRXXX24 is missing)
+groups_info <- read.table("groups_info.txt")
 
 
 #Adjusting the table and formats of the input files
 counts_cut <- counts[ , 6:ncol(counts) ]
-groups_info <- groups_info[-7,] #just because in the first run i didn't get the Srr file from group ***24.
 names(groups_info) <- c("label", "condition")
 
 #creating the DESeq2 object, run the command DESeq and runn rlog()
@@ -36,7 +36,20 @@ counts_dds_rlog <- rlog(counts_dds_DESeq)
 
 # 1. performing the pca
 #log transformation of the data for the pca
-plotPCA(object = counts_dds_rlog, intgroup = "condition")
+
+pca_plot <- plotPCA(counts_dds_rlog, intgroup = "condition") +
+  theme_bw() +
+  labs(
+    title = "PCA of rlog-transformed counts",
+    x = "PC1",
+    y = "PC2"
+  )
+pca_plot
+#we have to logtransform the numbers, to make the variance independent of the sample mean. ;)
+#so since we got genes that are really highly expressed and some low, that the "absolute change is reduced to relative change"
+
+
+#sometimes the adjusted p-value will be NA even though theres a number for the normal p value. thats because the "sample size" sometimes are too low.......
 
 # 2. heat map
 mat <- assay(counts_dds_rlog)
@@ -56,7 +69,7 @@ rownames(annotation_df) <- colnames(mat_top)
 
 
 
-pheatmap(
+pheatmap <- pheatmap(
   mat_top,
   annotation_col = annotation_df,
   scale = "row",
@@ -67,7 +80,7 @@ pheatmap(
   fontsize_row = 6
 )
 
-
+pheatmap
 
 
 ### 6. Differential expression analysis
@@ -116,4 +129,5 @@ de_genes <- res_df[res_df$padj < 0.05, ]
 nrow(de_genes)                      # number DE-Gene
 sum(de_genes$log2FoldChange > 0)    # Up-regulated
 sum(de_genes$log2FoldChange < 0)    # Down-regulated
+
 
