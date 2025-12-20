@@ -60,12 +60,12 @@ pca_plot
 
 # 2. heat map
 mat <- assay(counts_dds_rlog)
-head(rownames(mat))
+
 # calculate variance per gene
 gene_vars <- apply(mat, 1, var)
 
-# keep the top 500 most variable genes
-top_genes <- order(gene_vars, decreasing = TRUE)[1:20]
+# keep the top 50 most variable genes
+top_genes <- order(gene_vars, decreasing = TRUE)[1:200]
 mat_top <- mat[top_genes, ]
 
 #building a proper annotation data frame
@@ -76,42 +76,43 @@ rownames(annotation_df) <- colnames(mat_top)
 
 
 
-pheatmap <- pheatmap(
+heatmap <- pheatmap(
   mat_top,
-  annotation_col = annotation_df,
+  
   scale = "row",
   clustering_distance_rows = "euclidean",
   clustering_distance_cols = "euclidean",
   clustering_method = "complete",
   show_rownames = TRUE,
-  fontsize_row = 6
+  fontsize_row = 3
 )
-
-pheatmap
+#annotation_col = annotation_df,
+heatmap
 
 #---------------------------------------------------------------
 ### 6. Differential expression analysis
 
+#data for differential gene analysis
 WT_con_VS_WT_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_WT_Control", "Lung_WT_Case"))
 
 DKO_con_VS_DKO_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_DKO_Control", "Lung_DKO_Case"))
 
+#creating volcano plot for the differential gene expression 
+Volcano_WT <- EnhancedVolcano(
+  WT_con_VS_WT_case,
+  lab = NA,
+  x = "log2FoldChange",
+  y = "padj",
+  title = NULL
+) + panel_theme_volcano
 
-
-BiocManager::install('EnhancedVolcano')
-library(EnhancedVolcano)
-
-Volcano_WT <- EnhancedVolcano(WT_con_VS_WT_case,
-                lab = NA,
-                x = 'log2FoldChange',
-                y = 'padj',
-                title = "WT Control vs Case")
-
-Volcano_DKO <- EnhancedVolcano(DKO_con_VS_DKO_case,
-                lab = NA,
-                x = 'log2FoldChange',
-                y = 'padj',
-                title = "DKO Control vs Case")
+Volcano_DKO <- EnhancedVolcano(
+  DKO_con_VS_DKO_case,
+  lab = NA,
+  x = "log2FoldChange",
+  y = "padj",
+  title = NULL
+) + panel_theme_volcano
 
 
 Volcano_DKO
@@ -119,9 +120,25 @@ Volcano_WT
 #---------------------------------------------------------------
 
 # DE genes (padj < 0.05)
-de_genes <- res_df[res_df$padj < 0.05, ]
-nrow(de_genes)                      # number DE-Gene
-sum(de_genes$log2FoldChange > 0)    # Up-regulated
-sum(de_genes$log2FoldChange < 0)    # Down-regulated
+#extracting numbers
+res_WT <- as.data.frame(WT_con_VS_WT_case)
+de_WT <- res_WT[!is.na(res_WT$padj) & res_WT$padj < 0.05, ]
 
+res_DKO <- as.data.frame(DKO_con_VS_DKO_case)
+de_DKO <- res_DKO[!is.na(res_DKO$padj) & res_DKO$padj < 0.05, ]
 
+#creating summary table
+summary_DE <- data.frame(
+  Comparison = c("WT Control vs Case", "DKO Control vs Case"),
+  DE_genes = c(nrow(de_WT), nrow(de_DKO)),
+  Upregulated = c(
+    sum(de_WT$log2FoldChange > 0),
+    sum(de_DKO$log2FoldChange > 0)
+  ),
+  Downregulated = c(
+    sum(de_WT$log2FoldChange < 0),
+    sum(de_DKO$log2FoldChange < 0)
+  )
+)
+
+summary_DE
