@@ -2,7 +2,6 @@
 data/raw_data/**/
 *.fastq
 *.fastq.gz
-results/
 logs/
 
 # Bioinformatics outputs (for later)
@@ -13,6 +12,14 @@ logs/
 *.fq.gz
 *.vcf
 *.vcf.gz
+*.txt
+*.txt.summary
+*.ht2
+*.json
+*.log
+*fastqc.zip
+*fastqc.html
+
 
 # System/Editor
 .Rhistory
