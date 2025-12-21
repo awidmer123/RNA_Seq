@@ -1,0 +1,35 @@
+Tool versions used in RNA-Seq analysis
+Generated on: Sun Dec 21 15:54:07 CET 2025
+------------------------------------
+
+### Apptainer
+apptainer version 1.4.5-2.el8
+
+### FastQC
+Container: /containers/apptainer/fastqc-0.12.1.sif
+FastQC v0.12.1
+
+### HISAT2
+Container: /containers/apptainer/hisat2_samtools_408dfd02f175cd88.sif
+/opt/conda/bin/hisat2-align-s version 2.2.1
+64-bit
+Built on fv-az337-532
+Tue May 16 08:39:06 UTC 2023
+Compiler: collect2: error: ld returned 1 exit status
+Options: -O3 -m64 -msse2 -funroll-loops -g3 -DPOPCNT_CAPABILITY -std=c++11
+Sizeof {int, long, long long, void*, size_t, off_t}: {4, 8, 8, 8, 8, 8}
+
+### Samtools
+Container: /containers/apptainer/hisat2_samtools_408dfd02f175cd88.sif
+samtools 1.20
+
+### featureCounts (Subread)
+Container: /containers/apptainer/subread_2.0.6.sif
+
+featureCounts v2.0.6
+
+
+### MultiQC
+Container: /containers/apptainer/multiqc-1.19.sif
+multiqc, version 1.19
+
