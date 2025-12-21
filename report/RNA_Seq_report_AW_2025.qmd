@@ -10,12 +10,21 @@ format:
       text: |
         \usepackage{float}
         \usepackage{placeins}
-
 ---
 
 ## Abstract
 
 ## 1. Introduction
+
+Host–pathogen interactions induce complex transcriptional responses that are essential for effective immune defence and strongly influence disease outcome (Janeway and Medzhitov, 2002). The intracellular parasite Toxoplasma gondii infects a wide range of warm-blooded hosts and can colonise multiple tissues, including the lung. Pulmonary infection is associated with pronounced immune activation and inflammation, making lung tissue a suitable model for studying host transcriptional responses to T. gondii infection (Dubey, 2016).
+
+The RNA-Seq data analysed in this project originate from a study by Singhania et al., which investigated immune responses to T. gondii infection in mice with different genetic backgrounds. In particular, the study compared wild-type (WT) animals to a double knockout (DKO) model lacking both the type I interferon receptor (Ifnar⁻/⁻) and the type II interferon receptor (Ifngr⁻/⁻). Interferon signalling plays a central role in host defence against intracellular pathogens, and disruption of both interferon pathways is expected to substantially alter transcriptional responses to infection. In the context of this practical course, RNA-Seq subsamples derived from this experimental setup were provided by the university and re-analysed to address defined analytical questions.
+
+RNA sequencing (RNA-Seq) enables quantitative, genome-wide profiling of gene expression and has become a standard method for analysing transcriptional changes across biological conditions (Wang et al., 2009; Conesa et al., 2016). Its unbiased nature makes RNA-Seq particularly suitable for investigating complex processes such as infection-induced immune responses, where coordinated regulation of many genes is expected.
+
+In this project, RNA-Seq data derived from lung tissue were analysed to characterise host transcriptional changes associated with T. gondii infection. For both WT and DKO mice, infected (“case”) samples were compared to uninfected (“control”) samples to identify genes that are differentially expressed upon infection. By analysing the two genotypes separately, this study aims to assess how the absence of interferon signalling influences the magnitude and nature of the transcriptional response to T. gondii.
+
+The overall aim of this project was to compare lung-specific transcriptional responses to Toxoplasma gondii infection between wild-type and interferon receptor–deficient mice. Rather than testing predefined hypotheses, the analysis follows an exploratory approach to characterise how disruption of type I and type II interferon signalling affects infection-induced gene expression in lung tissue. To this end, a standard RNA-Seq analysis workflow was applied, including quality control of sequencing data, read alignment to a reference genome, gene-level quantification, and statistical testing for differential expression. Emphasis was placed on reproducibility, appropriate statistical analysis, and careful assessment of data quality to enable a robust comparison of transcriptional responses between genotypes.
 
 ## 2. Materials and Methods
 
@@ -25,11 +34,11 @@ This project analysed strand-specific, paired-end Illumina HiSeq 4000 RNA-seq da
 
 ### 2.2 Computational environment and workflow organisation
 
-All computationally intensive steps were executed on the IBU high-performance computing cluster using the Slurm workload manager. A structured project directory was created under `/data/users/<username>/RNA_Seq`, following a consistent organisation by analysis step (quality control, alignment, BAM processing, and read counting).
+All computationally intensive steps were executed on the IBU high-performance computing cluster using the Slurm workload manager. A structured project directory was created under `/data/users/awidmer/RNA_Seq`, following a consistent organisation by analysis step (quality control, alignment, BAM processing, and read counting).
 
-To ensure full reproducibility, all tools were run inside predefined Apptainer containers, which provide stable versions of all required software independent of system configuration. The following container images were used: FastQC (`fastqc-0.12.1.sif`), HISAT2 and Samtools (`hisat2_samtools_408dfd02f175cd88.sif`), and featureCounts (`subread_2.0.6.sif`).
+To ensure full reproducibility, all tools were run inside predefined Apptainer containers, which provide stable versions of all required software independent of system configuration. Containerised versions of FastQC, HISAT2, SAMtools, and featureCounts were used throughout the workflow. MultiQC was used to aggregate quality control metrics across samples.
 
-Version control was maintained throughout the project by tracking all bash and R scripts in a GitHub repository, while large intermediate data (e.g. BAM files) were excluded via `.gitignore`. This approach ensured transparency and reproducibility of all analytical steps.
+Detailed software versions for all cluster-based tools as well as R, Bioconductor, and the R packages used for downstream analysis are documented in the project repository under `results/versions/`. This includes the exact versions of FastQC, HISAT2, SAMtools, featureCounts, MultiQC, R, Bioconductor, and all relevant R packages to ensure full reproducibility of the analysis.
 
 ### 2.3 Quality control of raw sequencing reads
 
@@ -63,7 +72,7 @@ Principal component analysis (PCA) and sample-to-sample distance heatmaps were g
 
 ### 2.10 Differential expression analysis
 
-Differential expression analysis was performed using DESeq2’s Wald test. Two contrasts were evaluated independently: (i) WT Case vs WT Control, and (ii) DKO Case vs DKO Control. Genes were considered differentially expressed at a false discovery rate of `padj < 0.05`. For each contrast, the total number of significant DEGs as well as the counts of up- and down-regulated genes were recorded. Normalised counts of selected biologically relevant genes were inspected to support interpretation of genotype-specific responses.
+Differential expression analysis was performed using DESeq2’s Wald test. Two contrasts were evaluated independently: (i) WT Case vs WT Control, and (ii) DKO Case vs DKO Control. Genes were considered differentially expressed at a false discovery rate of `padj < 0.05`. No additional log2 fold-change threshold was applied. For each contrast, the total number of significant DEGs as well as the counts of up- and down-regulated genes were recorded. Normalised counts of selected biologically relevant genes were inspected to support interpretation of genotype-specific responses.
 
 ### 2.11 Gene Ontology enrichment analysis
 
@@ -215,15 +224,12 @@ pca_plot
 grid::grid.newpage()
 grid::grid.draw(heatmap$gtable)
 ```
+
 \FloatBarrier
 
-As shown in @fig-pca-hm (a), samples cluster according to both genotype and infection status. 
-WT and DKO samples separate along the first principal component, while infected and control samples show additional separation along the second component. 
-Biological replicates group closely together, indicating good reproducibility and low within-group variability.
+As shown in @fig-pca-hm (a), samples cluster according to both genotype and infection status. WT and DKO samples separate along the first principal component, while infected and control samples show additional separation along the second component. Biological replicates group closely together, indicating good reproducibility and low within-group variability.
 
-Figure @fig-pca-hm (b) shows the expression patterns of the 20 most variable genes across all samples.
-Hierarchical clustering reveals a clear separation of samples according to genotype and infection status.
-Replicates within the same condition cluster closely together, while distinct expression profiles are observed between WT and DKO samples.
+Figure @fig-pca-hm (b) shows the expression patterns of the 20 most variable genes across all samples. Hierarchical clustering reveals a clear separation of samples according to genotype and infection status. Replicates within the same condition cluster closely together, while distinct expression profiles are observed between WT and DKO samples.
 
 ```{r}
 #| label: volcano-setup
@@ -300,11 +306,10 @@ summary_DE |>
   )
 
 ```
+
 \FloatBarrier
 
 As shown in @tbl-DE-genes, both contrasts (WT and DKO) yield a substantial number of significantly differentially expressed genes. In each comparison, DEGs include both upregulated and downregulated transcripts, indicating that infection is associated with broad transcriptional shifts rather than changes restricted to a single direction. This table provides a compact overview of DEG counts used to contextualize the downstream functional enrichment analyses.
-
-
 
 ```{r}
 #| label: fig-volcano-panel
@@ -322,15 +327,9 @@ Volcano_DKO
 
 ```
 
-As shown in @fig-volcano-panel (a), infection of WT mice leads to widespread changes in gene expression.
-Both upregulated and downregulated genes are observed, with a substantial number of transcripts reaching statistical significance.
-The distribution of log₂ fold changes indicates a strong transcriptional response to infection in WT lung tissue.
+As shown in @fig-volcano-panel (a), infection of WT mice leads to widespread changes in gene expression. Both upregulated and downregulated genes are observed, with a substantial number of transcripts reaching statistical significance. The distribution of log₂ fold changes indicates a strong transcriptional response to infection in WT lung tissue.
 
-As shown in @fig-volcano-panel (b), infection of DKO mice results in differential expression of a large number of genes.
-Compared to the WT contrast, the overall distribution and magnitude of log₂ fold changes differs, indicating an altered transcriptional response in the absence of interferon signalling.
-Numerous genes reach statistical significance, reflecting a strong but distinct response to infection.
-
-
+As shown in @fig-volcano-panel (b), infection of DKO mice results in differential expression of a large number of genes. Compared to the WT contrast, the overall distribution and magnitude of log₂ fold changes differs, indicating an altered transcriptional response in the absence of interferon signalling. Numerous genes reach statistical significance, reflecting a strong but distinct response to infection.
 
 ```{r}
 #| label: enrichGO
@@ -427,13 +426,12 @@ barplot_ego_WT_BP_s
 barplot_ego_DKO_BP_s
 
 ```
-\FloatBarrier
-As shown in @fig-go-bp-barplots (a), differentially expressed genes in WT samples are significantly enriched for multiple Gene Ontology Biological Process terms. The enriched categories reflect biological processes associated with the transcriptional response to infection.
-Only the most significant non-redundant GO terms are displayed.
 
-As shown in @fig-go-bp-barplots (b), differentially expressed genes in DKO samples are enriched for multiple Gene Ontology Biological Process terms.
-The enrichment profile differs from that observed in WT samples, indicating altered functional responses to infection.
-Only the most significant non-redundant GO categories are displayed.
+\FloatBarrier
+
+As shown in @fig-go-bp-barplots (a), differentially expressed genes in WT samples are significantly enriched for multiple Gene Ontology Biological Process terms. The enriched categories reflect biological processes associated with the transcriptional response to infection. Only the most significant non-redundant GO terms are displayed.
+
+As shown in @fig-go-bp-barplots (b), differentially expressed genes in DKO samples are enriched for multiple Gene Ontology Biological Process terms. The enrichment profile differs from that observed in WT samples, indicating altered functional responses to infection. Only the most significant non-redundant GO categories are displayed.
 
 ```{r}
 #| label: Important genes
@@ -517,27 +515,15 @@ combined_hits[,1:7]|>
   )
 
 ```
+
 \FloatBarrier
 
-@tbl-important-genes lists a subset of genes that are significantly differentially expressed in WT and DKO case versus control samples.
-The table highlights both upregulated and downregulated transcripts, including several genes previously implicated in immune-related responses.
-These genes were selected to illustrate representative expression changes observed in the DKO condition.
+@tbl-important-genes lists a subset of genes that are significantly differentially expressed in WT and DKO case versus control samples. The table highlights both upregulated and downregulated transcripts, including several genes previously implicated in immune-related responses. These genes were selected to illustrate representative expression changes observed in the DKO condition.
 
 ## 4. Discussion
 
-We see that the major differences between the doublo knock out mutants and their control reference are on genes linked to this and that pathway.
-placeholder
-placeholder
-placeholder
-placeholder
-placeholder
+We see that the major differences between the doublo knock out mutants and their control reference are on genes linked to this and that pathway. placeholder placeholder placeholder placeholder placeholder
 
 ## 5. Conclusion
 
-In conclusion this study shows that bibedibabedibubedi.
-placeholder
-placeholder
-placeholder
-placeholder
-placeholder
-placeholder
+In conclusion this study shows that bibedibabedibubedi. placeholder placeholder placeholder placeholder placeholder placeholder
