@@ -1,0 +1,18 @@
+R and Bioconductor versions used in RNA-seq analysis
+Generated on: 2025-12-21 18:12:00
+--------------------------------------------------
+
+R version:
+R version 4.5.2 (2025-10-31)
+
+Bioconductor version:
+3.22
+
+Package versions:
+BiocManager: 1.30.27
+DESeq2: 1.50.2
+EnhancedVolcano: 1.28.2
+pheatmap: 1.0.13
+ggplot2: 4.0.1
+clusterProfiler: 4.18.4
+org.Mm.eg.db: 3.22.0
