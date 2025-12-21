@@ -1,28 +1,31 @@
-# Raw data & results
-data/raw_data/**/
+# ======================
+# Raw sequencing data
+# ======================
 *.fastq
 *.fastq.gz
+data/raw_data/
+
+# ======================
+# Results (ignore by default)
+# ======================
+results/*
+!results/
+!results/versions/
+!results/versions/**
+!results/multiqc_report_1.html
+
+# ======================
+# Logs & configs
+# ======================
 logs/
+config/
+resources/
 
-# Bioinformatics outputs (for later)
-*.bam
-*.bai
-*.sam
-*.fq
-*.fq.gz
-*.vcf
-*.vcf.gz
-*.txt
-*.txt.summary
-*.ht2
-*.json
-*.log
-*fastqc.zip
-*fastqc.html
-
-
-# System/Editor
+# ======================
+# System / Editor files
+# ======================
 .Rhistory
 .Rproj.user/
 .DS_Store
 .vscode/
+
