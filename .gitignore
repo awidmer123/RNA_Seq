@@ -15,6 +15,12 @@ results/*
 !results/multiqc_report_1.html
 
 # ======================
+# Local-only scripts
+# ======================
+scripts/3_FeatureCounts/add_MultiQC.slurm
+
+
+# ======================
 # Logs & configs
 # ======================
 logs/
