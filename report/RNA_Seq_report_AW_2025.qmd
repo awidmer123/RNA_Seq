@@ -242,42 +242,152 @@ As shown in @fig-pca-hm (a), samples cluster according to both genotype and infe
 Figure @fig-pca-hm (b) shows the expression patterns of the 20 most variable genes across all samples. Hierarchical clustering reveals a clear separation of samples according to genotype and infection status. Replicates within the same condition cluster closely together, while distinct expression profiles are observed between WT and DKO samples.
 \FloatBarrier
 
+```{r}
+#| label: preparing results tables
+#| include: false
+
+
+#data for differential gene analysis
+WT_con_VS_WT_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_WT_Case", "Lung_WT_Control"))
+
+DKO_con_VS_DKO_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_DKO_Case", "Lung_DKO_Control"))
+
+WT_case_VS_DKO_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_DKO_Case", "Lung_WT_Case"))
+```
+
+```{r}
+#| label: Important genes
+#| include: false
+
+
+#setting up working directory
+setwd("/home/andri/Desktop/UNIFR/2_Bioinf/RNA_Sequencing")
+
+#loading and modifying data
+module_df <- read.table("Lung modules.csv",sep = ",")
+colnames(module_df) <- c("ensembl_id", "Gene.name", "Module")
+
+#------------------FUNCTIONS-------------------------------------------
+
+# 1. defining function that annotates modules
+res_to_annot <- function(res_obj, module_Fdf) {
+  as.data.frame(res_obj) %>%
+    tibble::rownames_to_column("ensembl_id") %>%
+    filter(!is.na(padj), !is.na(log2FoldChange)) %>%     
+    left_join(module_df, by = "ensembl_id")
+}
+
+# 2. defining function that picks interesting candidates
+pick_candidates <- function(df, label, padj_cutoff = 0.05, lfc_cutoff = 1, top_n = 10) {
+  df %>%
+    mutate(is_ifn = gene_name %in% ifn_immune_genes) %>%
+    filter(padj < padj_cutoff, abs(log2FoldChange) >= lfc_cutoff) %>%
+    arrange(desc(is_ifn), padj, desc(abs(log2FoldChange))) %>%
+    mutate(contrast = label) %>%
+    select(contrast, ensembl_id, gene_name, module, baseMean, log2FoldChange, padj, is_ifn) %>%
+    head(top_n)
+}
+#----------------------------------------------------------------------
+
+#transmute module dataframe
+module_df <- module_df %>%
+  transmute(
+    ensembl_id = ensembl_id,
+    gene_name = Gene.name,
+    module = Module
+  )
+
+#using "res_to_annot" function
+wt_annot  <- res_to_annot(WT_con_VS_WT_case, module_df)
+dko_annot <- res_to_annot(DKO_con_VS_DKO_case, module_df)
+wt_dko_annot <- res_to_annot(WT_case_VS_DKO_case, module_df)
+
+
+#classical from literature derived genes that are involved in immune response and ifn related
+ifn_immune_genes <- c(
+  "Ifit1","Ifit2","Ifit3","Isg15","Rsad2","Mx1","Mx2",
+  "Oas1a","Oas1g","Oas2","Oas3","Oasl1","Oasl2",
+  "Irf7","Irf9","Stat1","Stat2","Usp18","Ddx58","Ifih1","Zbp1",
+  "Cxcl9","Cxcl10","Tap1","Tap2","B2m","Psmb8","Psmb9","Nlrc5",
+  "Gbp2","Gbp3","Gbp5","Gbp6","Gbp7","Gbp10",
+  "Il1b"
+)
+
+
+#using the pick_candidates function to select for intersting hits
+wt_hits  <- pick_candidates(wt_annot,  "WT: infected vs control")
+dko_hits <- pick_candidates(dko_annot, "DKO: infected vs control")
+wt_dko_hits <- pick_candidates(wt_dko_annot, "WT infected vs DKO infected")
+
+combined_hits <- rbind(wt_hits, dko_hits, wt_dko_hits)
+
+```
 
 ```{r}
 #| label: volcano-setup
 #| include: false
 
-#data for differential gene analysis
-WT_con_VS_WT_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_WT_Control", "Lung_WT_Case"))
 
-DKO_con_VS_DKO_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_DKO_Control", "Lung_DKO_Case"))
 
-WT_case_VS_DKO_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_WT_Case", "Lung_DKO_Case"))
+# --- Map ENSMUSG -> gene symbol (English comments, <-) ---
+lung_map <- read.csv("Lung modules.csv", header = FALSE, stringsAsFactors = FALSE)
+colnames(lung_map) <- c("ensembl_id", "gene_name", "module")
 
-#creating volcano plot for the differential gene expression 
+ens2sym <- setNames(lung_map$gene_name, lung_map$ensembl_id)
+
+# Helper: return a label vector matching rownames(res)
+get_labels <- function(res, map_vec) {
+  rn <- rownames(res)
+  if (all(grepl("^ENSMUSG", rn))) {
+    lab <- unname(map_vec[rn])
+    lab[is.na(lab)] <- rn[is.na(lab)]  # fallback if unmapped
+    return(lab)
+  } else {
+    return(rn) # already gene symbols (or something else readable)
+  }
+}
+
+# --- Define the EXACT genes you want to label (from your Table 2 screenshot) ---
+lab_WT <- wt_hits$gene_name
+
+lab_DKO <- dko_hits$gene_name
+
+lab_WTca_vs_DKOca <- wt_dko_hits$gene_name
+
+# --- Build volcanoes with mapping + selectLab ---
 Volcano_WT <- EnhancedVolcano(
   WT_con_VS_WT_case,
-  lab = NA,
+  lab = get_labels(WT_con_VS_WT_case, ens2sym),
   x = "log2FoldChange",
   y = "padj",
-  title = NULL
+  title = NULL,
+  selectLab = lab_WT,
+  drawConnectors = TRUE,
+  max.overlaps = Inf
 ) + panel_theme_volcano
 
 Volcano_DKO <- EnhancedVolcano(
   DKO_con_VS_DKO_case,
-  lab = NA,
+  lab = get_labels(DKO_con_VS_DKO_case, ens2sym),
   x = "log2FoldChange",
   y = "padj",
-  title = NULL
+  title = NULL,
+  selectLab = lab_DKO,
+  drawConnectors = TRUE,
+  max.overlaps = Inf
 ) + panel_theme_volcano
 
 Volcano_WTca_vs_DKOca <- EnhancedVolcano(
   WT_case_VS_DKO_case,
-  lab = NA,
+  lab = get_labels(WT_case_VS_DKO_case, ens2sym),
   x = "log2FoldChange",
   y = "padj",
-  title = NULL
+  title = NULL,
+  selectLab = lab_WTca_vs_DKOca,
+  drawConnectors = TRUE,
+  max.overlaps = Inf
 ) + panel_theme_volcano
+
 ```
 
 ```{r}
@@ -311,6 +421,7 @@ summary_DE <- data.frame(
   )
 )
 ```
+\FloatBarrier
 
 ### 3.3 Differential gene expression analysis
 
@@ -335,7 +446,6 @@ summary_DE |>
   )
 
 ```
-
 \FloatBarrier
 
 As summarised in @tbl-DE-genes, infection induced widespread transcriptional changes in lung tissue in both WT and DKO mice, with more than 10,000 genes showing significant differential expression in each genotype. In contrast, the direct comparison between infected WT and infected DKO samples yielded a smaller, yet substantial, set of differentially expressed genes, indicating genotype-dependent differences in transcriptional responses specifically under infectious conditions.
@@ -344,7 +454,7 @@ As summarised in @tbl-DE-genes, infection induced widespread transcriptional cha
 #| label: fig-volcano-panel
 #| echo: false
 #| layout-ncol: 2
-#| fig-cap: "Volcano plots illustrating differential gene expression in lung tissue following Toxoplasma gondii infection. Shown are (a) WT control vs case, (b) DKO control vs case, and (c) WT case vs DKO case. Each point represents one gene; the x-axis shows log₂ fold change and the y-axis shows −log₁₀ adjusted p-values (DESeq2 Wald test)."
+#| fig-cap: "Volcano plots illustrating differential gene expression in lung tissue following Toxoplasma gondii infection. Shown are (a) WT control vs case, (b) DKO control vs case, and (c) WT case vs DKO case. Each point represents one gene; the x-axis shows log₂ fold change and the y-axis shows −log₁₀ adjusted p-values (DESeq2 Wald test). Labeled genes correspond to selected immune-related genes summarized in Table 2."
 #| fig-subcap: ["WT control vs case", "DKO control vs case", "WT case vs DKO case"]
 #| fig-pos: "H"
 #| fig-width: 12
@@ -504,74 +614,6 @@ The direct comparison between infected WT and infected DKO samples (@fig-go-bp-b
 \FloatBarrier
 
 ### 3.5 Comparison to Singhania et al. 
-
-```{r}
-#| label: Important genes
-#| include: false
-
-#setting up working directory
-setwd("/home/andri/Desktop/UNIFR/2_Bioinf/RNA_Sequencing")
-
-
-#loading and modifying data
-module_df <- read.table("Lung modules.csv",sep = ",")
-colnames(module_df) <- c("ensembl_id", "Gene.name", "Module")
-
-#------------------FUNCTIONS-------------------------------------------
-
-# 1. defining function that annotates modules
-res_to_annot <- function(res_obj, module_Fdf) {
-  as.data.frame(res_obj) %>%
-    tibble::rownames_to_column("ensembl_id") %>%
-    filter(!is.na(padj), !is.na(log2FoldChange)) %>%     
-    left_join(module_df, by = "ensembl_id")
-}
-
-# 2. defining function that picks interesting candidates
-pick_candidates <- function(df, label, padj_cutoff = 0.05, lfc_cutoff = 1, top_n = 10) {
-  df %>%
-    mutate(is_ifn = gene_name %in% ifn_immune_genes) %>%
-    filter(padj < padj_cutoff, abs(log2FoldChange) >= lfc_cutoff) %>%
-    arrange(desc(is_ifn), padj, desc(abs(log2FoldChange))) %>%
-    mutate(contrast = label) %>%
-    select(contrast, ensembl_id, gene_name, module, baseMean, log2FoldChange, padj, is_ifn) %>%
-    head(top_n)
-}
-#----------------------------------------------------------------------
-
-#transmute module dataframe
-module_df <- module_df %>%
-  transmute(
-    ensembl_id = ensembl_id,
-    gene_name = Gene.name,
-    module = Module
-  )
-
-#using "res_to_annot" function
-wt_annot  <- res_to_annot(WT_con_VS_WT_case, module_df)
-dko_annot <- res_to_annot(DKO_con_VS_DKO_case, module_df)
-wt_dko_annot <- res_to_annot(WT_case_VS_DKO_case, module_df)
-
-
-#classical from literature derived genes that are involved in immune response and ifn related
-ifn_immune_genes <- c(
-  "Ifit1","Ifit2","Ifit3","Isg15","Rsad2","Mx1","Mx2",
-  "Oas1a","Oas1g","Oas2","Oas3","Oasl1","Oasl2",
-  "Irf7","Irf9","Stat1","Stat2","Usp18","Ddx58","Ifih1","Zbp1",
-  "Cxcl9","Cxcl10","Tap1","Tap2","B2m","Psmb8","Psmb9","Nlrc5",
-  "Gbp2","Gbp3","Gbp5","Gbp6","Gbp7","Gbp10",
-  "Il1b"
-)
-
-
-#using the pick_candidates function to select for intersting hits
-wt_hits  <- pick_candidates(wt_annot,  "WT: infected vs control")
-dko_hits <- pick_candidates(dko_annot, "DKO: infected vs control")
-wt_dko_hits <- pick_candidates(wt_dko_annot, "WT infected vs DKO infected")
-
-combined_hits <- rbind(wt_hits, dko_hits, wt_dko_hits)
-
-```
 
 ```{r}
 #| label: tbl-important-genes
