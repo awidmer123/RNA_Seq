@@ -16,7 +16,7 @@ library(ggplot2)
 
 
 #reading in the necessary files
-counts <- read.table("counts2.txt", header = TRUE, row.names = 1) #"counts.txt" for former document (sample SRRXXX24 is missing)
+counts <- read.table("counts2.txt", header = TRUE, row.names = 1) 
 groups_info <- read.table("groups_info.txt")
 
 
@@ -78,15 +78,15 @@ rownames(annotation_df) <- colnames(mat_top)
 
 heatmap <- pheatmap(
   mat_top,
-  
+  annotation_col = annotation_df,
   scale = "row",
   clustering_distance_rows = "euclidean",
   clustering_distance_cols = "euclidean",
   clustering_method = "complete",
-  show_rownames = TRUE,
+  show_rownames = FALSE,
   fontsize_row = 3
 )
-#annotation_col = annotation_df,
+#
 heatmap
 
 #---------------------------------------------------------------
@@ -97,26 +97,71 @@ WT_con_VS_WT_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_W
 
 DKO_con_VS_DKO_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_DKO_Control", "Lung_DKO_Case"))
 
-#creating volcano plot for the differential gene expression 
+WT_con_VS_DKO_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_WT_Control", "Lung_DKO_Case"))
+
+
+# --- Map ENSMUSG -> gene symbol (English comments, <-) ---
+lung_map <- read.csv("Lung modules.csv", header = FALSE, stringsAsFactors = FALSE)
+colnames(lung_map) <- c("ensembl_id", "gene_name", "module")
+
+ens2sym <- setNames(lung_map$gene_name, lung_map$ensembl_id)
+
+# Helper: return a label vector matching rownames(res)
+get_labels <- function(res, map_vec) {
+  rn <- rownames(res)
+  if (all(grepl("^ENSMUSG", rn))) {
+    lab <- unname(map_vec[rn])
+    lab[is.na(lab)] <- rn[is.na(lab)]  # fallback if unmapped
+    return(lab)
+  } else {
+    return(rn) # already gene symbols (or something else readable)
+  }
+}
+
+# --- Define the EXACT genes you want to label (from your Table 2 screenshot) ---
+lab_WT <- c("Tap1","Stat2","Irf7","Gbp5","Gbp2","Ifit2","Psmb8","Zbp1","Gbp10","Gbp3")
+
+lab_DKO <- c("Oasl1","Oas2","Oas3","Cxcl10","Mx1","Gbp10","Cxcl9","Rsad2","Acta1","Krt13")
+
+lab_WTca_vs_DKOca <- c("Tap1","Stat2","Irf7","Ifit1","Gbp5","Gbp2","Gbp3","Oas2","Ifit2","Oasl1")
+
+# --- Build volcanoes with mapping + selectLab ---
 Volcano_WT <- EnhancedVolcano(
   WT_con_VS_WT_case,
-  lab = NA,
+  lab = get_labels(WT_con_VS_WT_case, ens2sym),
   x = "log2FoldChange",
   y = "padj",
-  title = NULL
+  title = NULL,
+  selectLab = lab_WT,
+  drawConnectors = TRUE,
+  max.overlaps = Inf
 ) + panel_theme_volcano
 
 Volcano_DKO <- EnhancedVolcano(
   DKO_con_VS_DKO_case,
-  lab = NA,
+  lab = get_labels(DKO_con_VS_DKO_case, ens2sym),
   x = "log2FoldChange",
   y = "padj",
-  title = NULL
+  title = NULL,
+  selectLab = lab_DKO,
+  drawConnectors = TRUE,
+  max.overlaps = Inf
 ) + panel_theme_volcano
 
+Volcano_WTca_vs_DKOca <- EnhancedVolcano(
+  WT_case_VS_DKO_case,
+  lab = get_labels(WT_case_VS_DKO_case, ens2sym),
+  x = "log2FoldChange",
+  y = "padj",
+  title = NULL,
+  selectLab = lab_WTca_vs_DKOca,
+  drawConnectors = TRUE,
+  max.overlaps = Inf
+) + panel_theme_volcano
 
-Volcano_DKO
 Volcano_WT
+Volcano_DKO
+Volcano_WTca_vs_DKOca
 #---------------------------------------------------------------
 
 # DE genes (padj < 0.05)
