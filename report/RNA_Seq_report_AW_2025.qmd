@@ -1,5 +1,6 @@
 ---
-title: "RNA Sequencing 2025"
+title: "The Role of Interferon Signaling in the Pulmonary Immune Response"
+subtitle: "RNA Sequencing 2025"
 author: "Andri L. Widmer  20-105-581"
 format:
   pdf:
@@ -13,6 +14,7 @@ format:
 ---
 
 ## Abstract
+Interferon signaling is a central component of host defense against intracellular pathogens. In this study, RNA-seq data from lung tissue of wild-type and double knockout mice were analyzed to investigate genotype-dependent transcriptional responses to infection. After rigorous quality assessment confirming high data integrity, exploratory analyses revealed clear clustering of samples by both infection status and genotype, indicating strong biologically driven effects. Differential expression analysis showed robust induction of immune-related genes in infected wild-type mice, particularly genes associated with interferon-regulated pathways. In contrast, the same genes were largely not differentially expressed in infected double knockout animals. Direct comparison of infected wild-type and knockout samples further demonstrated pronounced overexpression of interferon pathway genes in wild-type mice. Gene Ontology enrichment analysis supported these findings, with immune-related terms prominently enriched in comparisons involving wild-type infection but largely absent in the knockout condition. Together, these results indicate that intact type I and type II interferon signaling is essential for mounting a coordinated transcriptional immune response to infection, and that disruption of this axis leads to a profound loss of immune gene activation despite pathogen exposure.
 
 ## 1. Introduction
 Toxoplasma gondii is an obligate intracellular protozoan parasite capable of infecting a wide range of warm-blooded hosts, including humans. Infection with T. gondii elicits strong host immune responses and can lead to pronounced inflammation, particularly during acute stages of infection (Dubey, 2016). Effective control of this pathogen relies heavily on coordinated innate and adaptive immune mechanisms, with interferon signalling playing a central role in host defence against intracellular parasites.
@@ -638,6 +640,28 @@ combined_hits[,1:7]|>
 
 ## 4. Discussion
 
-We see that the major differences between the doublo knock out mutants and their control reference are on genes linked to this and that pathway. placeholder placeholder placeholder placeholder placeholder
+The quality assessment indicated high overall data quality, with no obvious technical outliers or batch effects detected. Principal component analysis and hierarchical clustering consistently revealed a clear separation of samples according to both infection status and genotype. This demonstrates that the dominant sources of variance in the dataset are biologically driven rather than technical, providing a robust foundation for downstream differential expression analyses.
 
+Comparative analysis of gene expression further highlighted a pronounced genotype-dependent response to infection. In wild-type mice, infection induced strong and statistically significant upregulation of a broad set of immune-related genes. Many of these genes correspond to those previously described as part of immune response modules, particularly modules associated with type I interferon signaling and IFNγ/STAT1-mediated pathways. In contrast, the same genes were largely not differentially expressed in the double knockout condition, with only two genes reaching statistical significance. This indicates a substantial loss of coordinated immune gene induction in the absence of intact interferon signaling.
+
+The direct comparison between infected wild-type and infected double knockout samples further reinforced this observation. Genes belonging to interferon-dependent pathways were consistently overexpressed in wild-type mice relative to knockout animals, underscoring the central role of interferon signaling in shaping the transcriptional immune response. Rather than reflecting a simple reduction in response magnitude, the knockout phenotype appears to represent a collapse of an interferon-driven transcriptional program, affecting both early innate signaling and downstream effector mechanisms.
+
+Functional enrichment analysis supported these findings at a systems level. While comparisons involving wild-type infected samples were enriched for immune-related Gene Ontology terms such as cytokine signaling, interferon response, and antigen processing, these categories were markedly reduced or absent in the double knockout comparison. This qualitative shift suggests that residual transcriptional changes observed in the knockout background are not part of a coordinated immune response but may instead reflect nonspecific or secondary effects of infection.
+
+Together, these results highlight the critical importance of both type I and type II interferon pathways in orchestrating effective host defense mechanisms. The absence of these signaling axes results in a failure to activate key immune genes despite pathogen exposure, emphasizing their indispensable role in initiating and amplifying immune responses. A limitation of this study is the use of bulk RNA-seq data, which does not allow cell-type–specific effects to be resolved. Future single-cell or time-resolved analyses would help disentangle cell-intrinsic transcriptional defects from potential differences in immune cell composition. Nonetheless, the present findings provide clear transcriptional evidence that interferon signaling is a central determinant of effective immune activation in this infection model.
+
+### AI Usage
+Artificial intelligence tools were used to support efficient code development and linguistic refinement of the manuscript. In particular, ChatGPT was employed to assist with code optimization, troubleshooting, and stylistic polishing of the written text.
+
+### References
+
+Conesa, A. et al. (2016) “A survey of best practices for RNA-seq data analysis,” Genome Biology, 17(1), p. 13. Available at: https://doi.org/10.1186/s13059-016-0881-8.
+
+Dubey, J.P. (2016) Toxoplasmosis of Animals and Humans. 0 ed. CRC Press. Available at: https://doi.org/10.1201/9781420092370.
+
+Janeway, C.A. and Medzhitov, R. (2002) “Innate Immune Recognition,” Annual Review of Immunology, 20(1), pp. 197–216. Available at: https://doi.org/10.1146/annurev.immunol.20.083001.084359.
+
+Singhania, A. et al. (2019) “Transcriptional profiling unveils type I and II interferon networks in blood and tissues across diseases,” Nature Communications, 10(1), p. 2887. Available at: https://doi.org/10.1038/s41467-019-10601-6.
+
+Wang, Z., Gerstein, M. and Snyder, M. (2009) “RNA-Seq: a revolutionary tool for transcriptomics,” Nature Reviews Genetics, 10(1), pp. 57–63. Available at: https://doi.org/10.1038/nrg2484.
 
