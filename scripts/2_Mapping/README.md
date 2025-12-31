@@ -1,33 +1,72 @@
-## Mapping — HISAT2 & Samtools Pipeline
+# 2_Mapping
 
-This directory contains the scripts used to run the RNA-seq mapping workflow. The pipeline extracts splice/exon information, builds the HISAT2 genome index, aligns paired-end FASTQ reads, and converts the resulting SAM files into sorted/indexed BAM files using samtools inside an Apptainer container.
+This directory contains scripts for read alignment and post-processing in the
+RNA-seq workflow. The final pipeline performs splice site extraction, genome
+indexing, paired-end read alignment using HISAT2, and conversion of SAM files
+into sorted and indexed BAM files using samtools within an Apptainer container.
 
-## Scripts overview
+Earlier development iterations have been moved to a dedicated `deprecated/`
+subdirectory and are not part of the final analysis.
 
-gtf_process.slurm
-Extract splice sites and exons from the unzipped GTF file (HISAT2 helpers).
+## Contents and running order
 
-index.slurm
-Build the HISAT2 genome index from the reference .fa file.
+### 1. `hisat2_process.slurm`
+SLURM batch script extracting splice sites and exon information from the
+uncompressed GTF annotation file using HISAT2 helper scripts.
 
-mapping.sh
-Loop over paired FASTQ files and submit one mapping job per sample.
+**Output:**  
+- Splice site and exon files for downstream alignment
 
-mapping.slurm
-Run HISAT2 alignment using the genome index and splice site file.
-Outputs <sample>.sam and a summary file.
+---
 
-samtools.sh
-Loop over all .sam files and submit one samtools conversion job per file.
+### 2. `index.slurm`
+SLURM script building the HISAT2 genome index from the reference genome FASTA
+file.
 
-samtools.slurm
-Convert .sam → .bam, sort, and create .bai index using samtools.
+**Output:**  
+- HISAT2 genome index files
 
+---
 
-## Running order of involved scripts
+### 3. `mapping2_all`
+Wrapper script iterating over paired-end FASTQ files and submitting one mapping
+job per sample.
 
-1. sbatch index.slurm
-2. sbatch hisat2_process.slurm
-3. ./mapping.sh
-4. ./samtools.sh
+---
 
+### 4. `mapping2.slurm`
+SLURM batch script performing paired-end read alignment using HISAT2 with the
+pre-built genome index and splice site information.
+
+**Input:**  
+- Paired-end FASTQ files  
+- HISAT2 genome index  
+- Splice site/exon files
+
+**Output:**  
+- SAM alignment files  
+- Alignment summary statistics
+
+---
+
+### 5. `samtools2.sh`
+Wrapper script submitting samtools jobs for all generated SAM files.
+
+---
+
+### 6. `samtools2.slurm`
+SLURM batch script converting SAM files to BAM format, sorting them, and
+generating BAM index files.
+
+**Output:**  
+- Sorted BAM files  
+- BAM index (`.bai`) files
+
+---
+
+## Notes
+- Scripts should be executed in the order listed above.
+- This directory represents the final, reproducible mapping pipeline used in
+  the analysis.
+- Output BAM files are used as input for read quantification in the
+  `3_FeatureCounts` directory.
