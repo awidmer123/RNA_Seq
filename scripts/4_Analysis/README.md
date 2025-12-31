@@ -43,3 +43,4 @@ It identifies enriched biological processes and pathways among differentially ex
 - Scripts should be executed in the order listed above.
 - All analyses assume that input count data and metadata have been generated and quality-checked in previous pipeline steps.
 - Figures and tables generated here are used directly in the final report.
+- **A more detailed, chronological, and conceptually structured description of the analysis workflow is provided in the `report/` directory, where the results are presented in clearly separated and more comprehensible sections.**
