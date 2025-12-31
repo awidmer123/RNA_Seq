@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+# PATH
+FASTQ_DIR=/data/users/awidmer/RNA_Seq/data/raw_data/reads_Lung
+OUT_DIR=/data/users/awidmer/RNA_Seq/results/sam
+INDEX_BASENAME=/data/users/awidmer/RNA_Seq/results/index/index
+SPLICE_SITE_FILE=/data/users/awidmer/RNA_Seq/results/exons_and_splice_sites/splice_sites.txt
+
+# MAP EACH FASTQ TO REF
+for file_1 in `ls -1 $FASTQ_DIR/*_1.fastq.gz`; do
+    file_2=${file_1%_1.fastq.gz}_2.fastq.gz
+    sample_name=$(basename ${file_1%_1.fastq.gz})
+    sbatch ${BASH_SOURCE[0]%/mapping.sh}/mapping.slurm $file_1 $file_2 $sample_name $INDEX_BASENAME $OUT_DIR $SPLICE_SITE_FILE
+done
