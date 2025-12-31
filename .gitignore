@@ -13,6 +13,7 @@ results/*
 !results/versions/
 !results/versions/**
 !results/multiqc_report_1.html
+!results/README.md
 
 # ======================
 # Local-only scripts
