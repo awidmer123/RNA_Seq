@@ -1,0 +1,61 @@
+Module	Section	Sample Name	Source
+featureCounts	all_sections	SRR7821918	/data/users/awidmer/RNA_Seq/results/counts/counts.txt.summary
+featureCounts	all_sections	SRR7821919	/data/users/awidmer/RNA_Seq/results/counts/counts.txt.summary
+featureCounts	all_sections	SRR7821920	/data/users/awidmer/RNA_Seq/results/counts/counts.txt.summary
+featureCounts	all_sections	SRR7821921	/data/users/awidmer/RNA_Seq/results/counts/counts.txt.summary
+featureCounts	all_sections	SRR7821922	/data/users/awidmer/RNA_Seq/results/counts/counts.txt.summary
+featureCounts	all_sections	SRR7821923	/data/users/awidmer/RNA_Seq/results/counts/counts.txt.summary
+featureCounts	all_sections	SRR7821924	/data/users/awidmer/RNA_Seq/results/counts/counts2.txt.summary
+featureCounts	all_sections	SRR7821925	/data/users/awidmer/RNA_Seq/results/counts/counts.txt.summary
+featureCounts	all_sections	SRR7821927	/data/users/awidmer/RNA_Seq/results/counts/counts.txt.summary
+featureCounts	all_sections	SRR7821937	/data/users/awidmer/RNA_Seq/results/counts/counts.txt.summary
+featureCounts	all_sections	SRR7821938	/data/users/awidmer/RNA_Seq/results/counts/counts.txt.summary
+featureCounts	all_sections	SRR7821939	/data/users/awidmer/RNA_Seq/results/counts/counts.txt.summary
+featureCounts	all_sections	SRR7821940	/data/users/awidmer/RNA_Seq/results/counts/counts.txt.summary
+featureCounts	all_sections	SRR7821941	/data/users/awidmer/RNA_Seq/results/counts/counts.txt.summary
+featureCounts	all_sections	SRR7821942	/data/users/awidmer/RNA_Seq/results/counts/counts.txt.summary
+Bowtie 2 / HiSAT2	all_sections	SRR7821925	/data/users/awidmer/RNA_Seq/results/sam2/SRR7821925_summary.txt
+Bowtie 2 / HiSAT2	all_sections	SRR7821919	/data/users/awidmer/RNA_Seq/results/sam2/SRR7821919_summary.txt
+Bowtie 2 / HiSAT2	all_sections	SRR7821942	/data/users/awidmer/RNA_Seq/results/sam2/SRR7821942_summary.txt
+Bowtie 2 / HiSAT2	all_sections	SRR7821938	/data/users/awidmer/RNA_Seq/results/sam2/SRR7821938_summary.txt
+Bowtie 2 / HiSAT2	all_sections	SRR7821921	/data/users/awidmer/RNA_Seq/results/sam2/SRR7821921_summary.txt
+Bowtie 2 / HiSAT2	all_sections	SRR7821939	/data/users/awidmer/RNA_Seq/results/sam2/SRR7821939_summary.txt
+Bowtie 2 / HiSAT2	all_sections	SRR7821922	/data/users/awidmer/RNA_Seq/results/sam2/SRR7821922_summary.txt
+Bowtie 2 / HiSAT2	all_sections	SRR7821918	/data/users/awidmer/RNA_Seq/results/sam2/SRR7821918_summary.txt
+Bowtie 2 / HiSAT2	all_sections	SRR7821940	/data/users/awidmer/RNA_Seq/results/sam2/SRR7821940_summary.txt
+Bowtie 2 / HiSAT2	all_sections	SRR7821920	/data/users/awidmer/RNA_Seq/results/sam2/SRR7821920_summary.txt
+Bowtie 2 / HiSAT2	all_sections	SRR7821923	/data/users/awidmer/RNA_Seq/results/sam2/SRR7821923_summary.txt
+Bowtie 2 / HiSAT2	all_sections	SRR7821924	/data/users/awidmer/RNA_Seq/results/sam2/SRR7821924_summary.txt
+Bowtie 2 / HiSAT2	all_sections	SRR7821937	/data/users/awidmer/RNA_Seq/results/sam2/SRR7821937_summary.txt
+Bowtie 2 / HiSAT2	all_sections	SRR7821927	/data/users/awidmer/RNA_Seq/results/sam2/SRR7821927_summary.txt
+Bowtie 2 / HiSAT2	all_sections	SRR7821941	/data/users/awidmer/RNA_Seq/results/sam2/SRR7821941_summary.txt
+FastQC	all_sections	SRR7821939_1	/data/users/awidmer/RNA_Seq/results/QC/SRR7821939_1_fastqc.zip
+FastQC	all_sections	SRR7821927_1	/data/users/awidmer/RNA_Seq/results/QC/SRR7821927_1_fastqc.zip
+FastQC	all_sections	SRR7821937_2	/data/users/awidmer/RNA_Seq/results/QC/SRR7821937_2_fastqc.zip
+FastQC	all_sections	SRR7821918_2	/data/users/awidmer/RNA_Seq/results/QC/SRR7821918_2_fastqc.zip
+FastQC	all_sections	SRR7821923_2	/data/users/awidmer/RNA_Seq/results/QC/SRR7821923_2_fastqc.zip
+FastQC	all_sections	SRR7821941_1	/data/users/awidmer/RNA_Seq/results/QC/SRR7821941_1_fastqc.zip
+FastQC	all_sections	SRR7821938_1	/data/users/awidmer/RNA_Seq/results/QC/SRR7821938_1_fastqc.zip
+FastQC	all_sections	SRR7821924_2	/data/users/awidmer/RNA_Seq/results/QC/SRR7821924_2_fastqc.zip
+FastQC	all_sections	SRR7821920_2	/data/users/awidmer/RNA_Seq/results/QC/SRR7821920_2_fastqc.zip
+FastQC	all_sections	SRR7821924_1	/data/users/awidmer/RNA_Seq/results/QC/SRR7821924_1_fastqc.zip
+FastQC	all_sections	SRR7821937_1	/data/users/awidmer/RNA_Seq/results/QC/SRR7821937_1_fastqc.zip
+FastQC	all_sections	SRR7821923_1	/data/users/awidmer/RNA_Seq/results/QC/SRR7821923_1_fastqc.zip
+FastQC	all_sections	SRR7821925_2	/data/users/awidmer/RNA_Seq/results/QC/SRR7821925_2_fastqc.zip
+FastQC	all_sections	SRR7821918_1	/data/users/awidmer/RNA_Seq/results/QC/SRR7821918_1_fastqc.zip
+FastQC	all_sections	SRR7821925_1	/data/users/awidmer/RNA_Seq/results/QC/SRR7821925_1_fastqc.zip
+FastQC	all_sections	SRR7821919_1	/data/users/awidmer/RNA_Seq/results/QC/SRR7821919_1_fastqc.zip
+FastQC	all_sections	SRR7821940_2	/data/users/awidmer/RNA_Seq/results/QC/SRR7821940_2_fastqc.zip
+FastQC	all_sections	SRR7821940_1	/data/users/awidmer/RNA_Seq/results/QC/SRR7821940_1_fastqc.zip
+FastQC	all_sections	SRR7821921_1	/data/users/awidmer/RNA_Seq/results/QC/SRR7821921_1_fastqc.zip
+FastQC	all_sections	SRR7821921_2	/data/users/awidmer/RNA_Seq/results/QC/SRR7821921_2_fastqc.zip
+FastQC	all_sections	SRR7821942_1	/data/users/awidmer/RNA_Seq/results/QC/SRR7821942_1_fastqc.zip
+FastQC	all_sections	SRR7821942_2	/data/users/awidmer/RNA_Seq/results/QC/SRR7821942_2_fastqc.zip
+FastQC	all_sections	SRR7821927_2	/data/users/awidmer/RNA_Seq/results/QC/SRR7821927_2_fastqc.zip
+FastQC	all_sections	SRR7821939_2	/data/users/awidmer/RNA_Seq/results/QC/SRR7821939_2_fastqc.zip
+FastQC	all_sections	SRR7821920_1	/data/users/awidmer/RNA_Seq/results/QC/SRR7821920_1_fastqc.zip
+FastQC	all_sections	SRR7821938_2	/data/users/awidmer/RNA_Seq/results/QC/SRR7821938_2_fastqc.zip
+FastQC	all_sections	SRR7821941_2	/data/users/awidmer/RNA_Seq/results/QC/SRR7821941_2_fastqc.zip
+FastQC	all_sections	SRR7821922_1	/data/users/awidmer/RNA_Seq/results/QC/SRR7821922_1_fastqc.zip
+FastQC	all_sections	SRR7821919_2	/data/users/awidmer/RNA_Seq/results/QC/SRR7821919_2_fastqc.zip
+FastQC	all_sections	SRR7821922_2	/data/users/awidmer/RNA_Seq/results/QC/SRR7821922_2_fastqc.zip
