@@ -16,21 +16,7 @@ The script generates raw count matrices that serve as the primary input for all 
 - Gene-level count tables  
 - featureCounts summary files (assignment statistics)
 
----
-
-### 2. `add_MultiQC.slurm`
-SLURM script used to include **featureCounts output** in the global MultiQC report.  
-It ensures that read assignment statistics (e.g. assigned, unassigned, overlapping reads) are incorporated into the project-wide quality assessment.
-
-**Input:**  
-- featureCounts result and summary files
-
-**Output:**  
-- Updated MultiQC report including featureCounts metrics
-
----
 
 ## Notes
 - Scripts in this directory should be executed after read alignment has been completed.
 - The generated count tables represent the main quantitative input for DESeq2 analysis.
-- MultiQC integration is optional but recommended for comprehensive QC reporting.
