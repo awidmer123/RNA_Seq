@@ -2,8 +2,10 @@
 title: "The Role of Interferon Signaling in the Pulmonary Immune Response"
 subtitle: "RNA Sequencing 2025"
 author: "Andri L. Widmer  20-105-581"
+
 format:
   pdf:
+    toc: false   # disable automatic TOC
     crossref:
       fig-prefix: "Figure"
       tbl-prefix: "Table"
@@ -13,9 +15,18 @@ format:
         \usepackage{placeins}
 ---
 
-## Abstract
+
+## Abstract {.unnumbered .unlisted}
 
 Interferon signaling is a central component of host defense against intracellular pathogens. In this study, RNA-seq data from lung tissue of wild-type and double knockout mice were analyzed to investigate genotype-dependent transcriptional responses to infection. After rigorous quality assessment confirming high data integrity, exploratory analyses revealed clear clustering of samples by both infection status and genotype, indicating strong biologically driven effects. Differential expression analysis showed robust induction of immune-related genes in infected wild-type mice, particularly genes associated with interferon-regulated pathways. In contrast, the same genes were largely not differentially expressed in infected double knockout animals. Direct comparison of infected wild-type and knockout samples further demonstrated pronounced overexpression of interferon pathway genes in wild-type mice. Gene Ontology enrichment analysis supported these findings, with immune-related terms prominently enriched in comparisons involving wild-type infection but largely absent in the knockout condition. Together, these results indicate that intact type I and type II interferon signaling is essential for mounting a coordinated transcriptional immune response to infection, and that disruption of this axis leads to a profound loss of immune gene activation despite pathogen exposure.
+
+\newpage
+\tableofcontents
+\newpage
+\listoffigures
+\listoftables
+\newpage
+
 
 ## 1. Introduction
 
@@ -92,10 +103,13 @@ Quality control of the raw sequencing data was performed using MultiQC. Assignme
 #| label: setup
 #| include: false
 
+#-------------------------------------------------------------------------
+#loading necessary packages for general data anlysis
+#-------------------------------------------------------------------------
+
 #loading BiocManager
 if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
-  
 library(BiocManager)
 
 #loading packages
@@ -115,15 +129,49 @@ library(enrichplot)
 ```
 
 ```{r}
+#| label: DeSeq2-setup
+#| include: false
+
+#-------------------------------------------------------------------------
+#preparing DESeq objects
+#-------------------------------------------------------------------------
+
+#loading necessary data
+#counts table
+counts <- read.table("counts2.txt", header = TRUE, row.names = 1)
+
+#group information (sample names and treatments), was adjusted for right order
+groups_info <- read.table("groups_info.txt")
+names(groups_info) <- c("label", "condition")
+
+#deleting information columns
+counts_cut <- counts[, 6:ncol(counts)]
+
+#trangforming matrix to dds format
+counts_dds <- DESeqDataSetFromMatrix(
+countData = counts_cut,
+colData   = groups_info,
+design    = ~ condition
+)
+#creating rlog and DESeq object
+counts_dds_DESeq <- DESeq(counts_dds)
+counts_dds_rlog  <- rlog(counts_dds_DESeq)
+```
+
+```{r}
 #| label: unique-figure-design
 #| include: false
 
+#-------------------------------------------------------------------------
+#plot and table design
+#-------------------------------------------------------------------------
 
-#loading necessary packages
+#loading necessary packages for table and plot design
 library(dplyr)
 library(knitr)
 library(kableExtra)
 
+#panel theme for volcano plots
 panel_theme_volcano <- theme_minimal(base_size = 20) +
   theme(
     plot.title = element_blank(),
@@ -135,6 +183,7 @@ panel_theme_volcano <- theme_minimal(base_size = 20) +
     legend.position = "bottom"   # ok für volcano (wenn’s passt)
   )
 
+#panel theme for go terms
 panel_theme_go <- theme_minimal(base_size = 20) +
   theme(
     plot.title = element_blank(),
@@ -148,30 +197,7 @@ panel_theme_go <- theme_minimal(base_size = 20) +
   )
 
 
-```
-
-```{r}
-#| label: DeSeq2-setup
-#| include: false
-counts <- read.table("counts2.txt", header = TRUE, row.names = 1)
-groups_info <- read.table("groups_info.txt")
-names(groups_info) <- c("label", "condition")
-
-counts_cut <- counts[, 6:ncol(counts)]
-
-counts_dds <- DESeqDataSetFromMatrix(
-countData = counts_cut,
-colData   = groups_info,
-design    = ~ condition
-)
-
-counts_dds_DESeq <- DESeq(counts_dds)
-counts_dds_rlog  <- rlog(counts_dds_DESeq)
-```
-
-```{r}
-#| label: color-setup
-#| include: false
+# fixed color choices
 
 # make sure condition is a factor with stable level order
 groups_info$condition <- factor(groups_info$condition)
@@ -189,6 +215,10 @@ condition_cols <- c(
 ```{r}
 #| label: making-pca-plot
 #| include: false
+
+#-------------------------------------------------------------------------
+#setup for pca plot using plotPCA() command on rlog transformed data
+#-------------------------------------------------------------------------
 
 pca_plot <- plotPCA(counts_dds_rlog, intgroup = "condition") +
   theme_bw() +
@@ -208,6 +238,11 @@ pca_plot <- plotPCA(counts_dds_rlog, intgroup = "condition") +
 #| label: heatmap-setup
 #| include: false
 
+#-------------------------------------------------------------------------
+# setup for heatmap
+#-------------------------------------------------------------------------
+
+#using assay() to get gene and samples matrix
 mat <- assay(counts_dds_rlog)
 
 # calculate variance per gene
@@ -217,14 +252,16 @@ gene_vars <- apply(mat, 1, var)
 top_genes <- order(gene_vars, decreasing = TRUE)[1:100]
 mat_top <- mat[top_genes, ]
 
-#building a proper annotation data frame
+# building a proper annotation data frame
 annotation_df <- as.data.frame(colData(counts_dds_DESeq)[, "condition", drop = FALSE])
 rownames(annotation_df) <- colnames(mat_top)
 
+# annotate colors for legend
 ann_colors <- list(
   condition = condition_cols
 )
 
+#making heatmap with pheatmap() command
 heatmap <- pheatmap(
   mat_top,
   annotation_col = annotation_df,
@@ -247,13 +284,19 @@ heatmap <- pheatmap(
 #| layout-ncol: 2
 #| fig-cap: "PCA and Heatmap"
 #| fig-subcap: ["PCA", "Heatmap of top 100 variable genes"]
+#| fig-scap: ["PCA and Heatmap"]
 #| fig-pos: "H"
 #| fig-width: 12
 #| fig-height: 8
 #| out-width: "100%"
 
+#-------------------------------------------------------------------------
+#plot panel with pca and heatmap
+#-------------------------------------------------------------------------
+
+# using grid.newpage() and grid.draw() to avoid graphic overlap
 pca_plot
-grid::grid.newpage()
+grid::grid.newpage() 
 grid::grid.draw(heatmap$gtable)
 ```
 
@@ -267,14 +310,20 @@ Figure @fig-pca-hm (b) shows the expression patterns of the 100 most variable ge
 #| label: preparing results tables
 #| include: false
 
+#-------------------------------------------------------------------------
+# data for differential gene analysis comparing different groups
+#-------------------------------------------------------------------------
 
-#data for differential gene analysis
+# WT control vs WT case
 WT_con_VS_WT_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_WT_Case", "Lung_WT_Control"))
 
+# DKO control vs DKO case
 DKO_con_VS_DKO_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_DKO_Case", "Lung_DKO_Control"))
 
+# WT case vs DKO case
 WT_case_VS_DKO_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_DKO_Case", "Lung_WT_Case"))
 
+# WT control vs DKO control
 WT_con_VS_DKO_con <- results(counts_dds_DESeq, contrast = c("condition", "Lung_DKO_Control", "Lung_WT_Control"))
 ```
 
@@ -282,6 +331,9 @@ WT_con_VS_DKO_con <- results(counts_dds_DESeq, contrast = c("condition", "Lung_D
 #| label: Important genes
 #| include: false
 
+#-------------------------------------------------------------------------
+# Finding and tracking some important genes, mentioned in Singhania et al. 2019
+#-------------------------------------------------------------------------
 
 #setting up working directory
 setwd("/home/andri/Desktop/UNIFR/2_Bioinf/RNA_Sequencing")
@@ -341,9 +393,9 @@ ifn_immune_genes <- c(
 wt_hits  <- pick_candidates(wt_annot,  "WT: infected vs control")
 dko_hits <- pick_candidates(dko_annot, "DKO: infected vs control")
 wt_dko_hits <- pick_candidates(wt_dko_annot, "WT infected vs DKO infected")
-wt_dko_con_hits <- pick_candidates(wt_dko_con_annot, "WT control vs DKO control")
+wt_dko_con_hits <- pick_candidates(wt_dko_con_annot, "WT control vs DKO control") #this specific part will not be shown in the final report, since in the view of the author, it does not support the understanding of the data.
 
-combined_hits <- rbind(wt_hits, dko_hits, wt_dko_hits, wt_dko_con_hits)
+combined_hits <- rbind(wt_hits, dko_hits, wt_dko_hits)
 
 ```
 
@@ -351,9 +403,15 @@ combined_hits <- rbind(wt_hits, dko_hits, wt_dko_hits, wt_dko_con_hits)
 #| label: volcano-setup
 #| include: false
 
+#-------------------------------------------------------------------------
+# setup for volcano plot
+#    1. getting labels of tracked genes
+#    2. creating plots
+#-------------------------------------------------------------------------
 
+# --- 1. getting labels for tracked genes ---
 
-# --- Map ENSMUSG -> gene symbol ---
+# Map ENSMUSG -> gene symbol
 lung_map <- read.csv("Lung modules.csv", header = FALSE, stringsAsFactors = FALSE)
 colnames(lung_map) <- c("ensembl_id", "gene_name", "module")
 
@@ -371,7 +429,7 @@ get_labels <- function(res, map_vec) {
   }
 }
 
-# --- Define the exact genes you want to label ---
+# Define the exact genes you want to label
 lab_WT <- wt_hits$gene_name
 
 lab_DKO <- dko_hits$gene_name
@@ -380,7 +438,8 @@ lab_WTca_vs_DKOca <- wt_dko_hits$gene_name
 
 lab_WTco_vs_DKOco <- wt_dko_con_hits$gene_name
 
-# --- Build volcanoes with mapping + selectLab ---
+# --- 2. Build volcanoes with mapping + selectLab ---
+# volcano plot WT control vs case
 Volcano_WT <- EnhancedVolcano(
   WT_con_VS_WT_case,
   lab = get_labels(WT_con_VS_WT_case, ens2sym),
@@ -392,6 +451,7 @@ Volcano_WT <- EnhancedVolcano(
   max.overlaps = Inf
 ) + panel_theme_volcano
 
+# volcano plot DKO control vs case
 Volcano_DKO <- EnhancedVolcano(
   DKO_con_VS_DKO_case,
   lab = get_labels(DKO_con_VS_DKO_case, ens2sym),
@@ -403,6 +463,7 @@ Volcano_DKO <- EnhancedVolcano(
   max.overlaps = Inf
 ) + panel_theme_volcano
 
+# volcano plot WT case vs DKO case
 Volcano_WTca_vs_DKOca <- EnhancedVolcano(
   WT_case_VS_DKO_case,
   lab = get_labels(WT_case_VS_DKO_case, ens2sym),
@@ -414,6 +475,8 @@ Volcano_WTca_vs_DKOca <- EnhancedVolcano(
   max.overlaps = Inf
 ) + panel_theme_volcano
 
+# volcano plot WT control vs DKO control
+#This specific plot will not be shown in the final report. Interpretation of it does not support understanding of data in the view of the author.
 Volcano_WTco_vs_DKOco <- EnhancedVolcano(
   WT_con_VS_DKO_con,
   lab = get_labels(WT_con_VS_DKO_con, ens2sym),
@@ -430,17 +493,24 @@ Volcano_WTco_vs_DKOco <- EnhancedVolcano(
 #| label: summary-table
 #| include: false
 
+#-------------------------------------------------------------------------
+# setup for summary table, getting the numbers of differnetially expressed genes
+#-------------------------------------------------------------------------
+
 # DE genes (padj < 0.05)
-#extracting numbers
+#extracting numbers for WT
 res_WT <- as.data.frame(WT_con_VS_WT_case)
 de_WT <- res_WT[!is.na(res_WT$padj) & res_WT$padj < 0.05, ]
 
+#extracting numbers for DKO
 res_DKO <- as.data.frame(DKO_con_VS_DKO_case)
 de_DKO <- res_DKO[!is.na(res_DKO$padj) & res_DKO$padj < 0.05, ]
 
+#extracting numbers for case vs case
 res_WT_DKO <- as.data.frame(WT_case_VS_DKO_case)
 de_WT_DKO <- res_WT_DKO[!is.na(res_WT_DKO$padj) & res_WT_DKO$padj < 0.05, ]
 
+#extracting numbers for control vs control
 res_WT_DKO_con <- as.data.frame(WT_con_VS_DKO_con)
 de_WT_DKO_con <- res_WT_DKO_con[!is.na(res_WT_DKO_con$padj) & res_WT_DKO_con$padj < 0.05, ]
 
@@ -471,7 +541,13 @@ summary_DE <- data.frame(
 #| label: tbl-DE-genes
 #| echo: false
 #| tbl-cap: "Number of significantly differentially expressed genes (DEGs; padj < 0.05) identified for infection-induced contrasts within genotypes (WT control vs case, DKO control vs case) and for the direct comparison between infected WT and infected DKO samples. DEGs are further classified as up- or downregulated based on the sign of the log₂ fold change."
+#| tbl-scap: ["Number of significantly differentially expressed genes"]
 
+#-------------------------------------------------------------------------
+# plotting summary table
+#-------------------------------------------------------------------------
+
+# using dplyr for nice layout
 summary_DE |>
   dplyr::mutate(
     DE_genes = as.integer(DE_genes),
@@ -498,16 +574,20 @@ As summarised in @tbl-DE-genes, infection induced widespread transcriptional cha
 #| echo: false
 #| layout-ncol: 2
 #| fig-cap: "Volcano plots illustrating differential gene expression in lung tissue following Toxoplasma gondii infection. Shown are (a) WT control vs case, (b) DKO control vs case, and (c) WT case vs DKO case. Each point represents one gene; the x-axis shows log₂ fold change and the y-axis shows −log₁₀ adjusted p-values (DESeq2 Wald test). Labeled genes correspond to selected immune-related genes summarized in Table 2."
+#| fig-scap: ["Volcano plots illustrating differential gene expression"]
 #| fig-subcap: ["WT Control vs Case", "DKO Control vs Case", "WT Case vs DKO Case", "WT Control vs DKO Control"]
 #| fig-pos: "H"
 #| fig-width: 12
 #| fig-height: 8
 #| out-width: "100%"
 
+#-------------------------------------------------------------------------
+#panel for volcano plot using a 2 column layout
+#-------------------------------------------------------------------------
+
 Volcano_WT
 Volcano_DKO
 Volcano_WTca_vs_DKOca
-Volcano_WTco_vs_DKOco
 
 ```
 
@@ -523,7 +603,11 @@ Importantly, the direct comparison of infected WT and infected DKO samples in @f
 #| label: enrichGO
 #| include: false
 
-# All genes, that were tested in DESeq2 analysisi
+#-------------------------------------------------------------------------
+# performing an enrichGO analysis
+#-------------------------------------------------------------------------
+
+# All genes, that were tested in DESeq2 analysis
 universe_genes <- rownames(counts_dds_DESeq)
 
 # Getting the groups for comparison
@@ -532,19 +616,22 @@ res_DKO <- DKO_con_VS_DKO_case
 res_WT_DKO <- WT_case_VS_DKO_case
 res_WT_DKO_con <- WT_con_VS_DKO_con
 
-
 # Significant genes (padj < 0.05, ni NAs)
 res_WT_sig <- res_WT[!is.na(res_WT$padj) & res_WT$padj < 0.05, ]
 res_DKO_sig <- res_DKO[!is.na(res_DKO$padj) & res_DKO$padj < 0.05, ]
 res_WT_DKO_sig <- res_WT_DKO[!is.na(res_WT_DKO$padj) & res_WT_DKO$padj < 0.05, ]
 res_WT_DKO_con_sig <- res_WT_DKO_con[!is.na(res_WT_DKO_con$padj) & res_WT_DKO_con$padj < 0.05, ]
 
-
+# row names/gene names of differentially expressed genes
 de_genes_WT <- rownames(res_WT_sig)  # Ensembl-IDs der DE-Gene
 de_genes_DKO <- rownames(res_DKO_sig)
 de_genes_WT_DKO <- rownames(res_WT_DKO_sig)
 de_genes_WT_DKO_con <- rownames(res_WT_DKO_con_sig)
 
+
+#performing analysis for each group with BP parameter (Biological Process)
+
+# WT case vs control
 ego_WT_BP <- enrichGO(
   gene          = de_genes_WT,      # DE genes
   universe      = universe_genes,   # all tested genes
@@ -557,6 +644,7 @@ ego_WT_BP <- enrichGO(
   readable      = TRUE              # mapping Ensembl -> Gene Symbols
 )
 
+# DKO case vs control
 ego_DKO_BP <- enrichGO(
   gene          = de_genes_DKO,      # DE genes
   universe      = universe_genes,   # all tested genes
@@ -569,6 +657,7 @@ ego_DKO_BP <- enrichGO(
   readable      = TRUE              # mapping Ensembl -> Gene Symbols
 )
 
+#WT case vs DKO case
 ego_WT_DKO_BP <- enrichGO(
   gene          = de_genes_WT_DKO,      # DE genes
   universe      = universe_genes,   # all tested genes
@@ -581,6 +670,8 @@ ego_WT_DKO_BP <- enrichGO(
   readable      = TRUE              # mapping Ensembl -> Gene Symbols
 )
 
+# WT control vs DKO control
+#This specific plot does not show up in the final report, since its interpretation does not support understanding of the data in the view of the author.
 ego_WT_DKO_con_BP <- enrichGO(
   gene          = de_genes_WT_DKO_con,      # DE genes
   universe      = universe_genes,   # all tested genes
@@ -598,20 +689,23 @@ ego_res <- ego_WT_BP@result[order(ego_WT_BP@result$p.adjust), ]
 ego_res_DKO <- ego_DKO_BP@result[order(ego_DKO_BP@result$p.adjust),]
 ego_res_WT_DKO <- ego_WT_DKO_BP@result[order(ego_WT_DKO_BP@result$p.adjust),]
 ego_res_WT_DKO_con <-ego_WT_DKO_con_BP@result[order(ego_WT_DKO_con_BP@result$p.adjust),]
+
 # Keep only top 50 (adjust if you want 100)
+#WT
 ego_WT_BP_top <- ego_WT_BP
 ego_WT_BP_top@result <- ego_res[1:50, ]
-
+#DKO
 ego_DKO_BP_top <- ego_DKO_BP
 ego_DKO_BP_top@result <- ego_res_DKO[1:50, ]
-
+#WT case vs DKO case
 ego_DKO_WT_BP_top <- ego_WT_DKO_BP
 ego_DKO_WT_BP_top@result <- ego_res_WT_DKO[1:50,]
-
+#WT control vs DKO control
 ego_DKO_WT_con_BP_top <- ego_WT_DKO_con_BP
 ego_DKO_WT_con_BP_top@result <- ego_res_WT_DKO_con[1:50,]
 
 #simplify GO term matrix to filter out redundancy
+# WT
 ego_WT_BP_s <- simplify(
   ego_WT_BP_top,
   measure = "Wang",
@@ -619,7 +713,7 @@ ego_WT_BP_s <- simplify(
   by = "p.adjust",
   select_fun = min
 )
-
+# DKO
 ego_DKO_BP_s <- simplify(
   ego_DKO_BP_top,
   measure = "Wang",
@@ -627,7 +721,7 @@ ego_DKO_BP_s <- simplify(
   by = "p.adjust",
   select_fun = min
 )
-
+# WT case vs DKO case
 ego_WT_DKO_BP_s <- simplify(
   ego_DKO_WT_BP_top,
   measure = "Wang",
@@ -635,7 +729,7 @@ ego_WT_DKO_BP_s <- simplify(
   by = "p.adjust",
   select_fun = min
 )
-
+# WT control vs DKO control
 ego_WT_DKO_con_BP_s <- simplify(
   ego_DKO_WT_con_BP_top,
   measure = "Wang",
@@ -645,19 +739,19 @@ ego_WT_DKO_con_BP_s <- simplify(
 )
 
 # barplots of simplified GO terms matrix
-
+# WT
 barplot_ego_WT_BP_s <- barplot(ego_WT_BP_s, showCategory = 10) +
   panel_theme_go +
   theme(axis.text.y = element_text(size = 20))
-
+# DKO
 barplot_ego_DKO_BP_s <- barplot(ego_DKO_BP_s, showCategory = 10) +
   panel_theme_go +
   theme(axis.text.y = element_text(size = 20))
-
+# WT case vs DKO case
 barplot_ego_WT_DKO_BP_s <- barplot(ego_WT_DKO_BP_s, showCategory = 10) +
   panel_theme_go +
   theme(axis.text.y = element_text(size = 20))
-
+# WT control vs DKO control
 barplot_ego_WT_DKO_con_BP_s <- barplot(ego_WT_DKO_con_BP_s, showCategory = 10) +
   panel_theme_go +
   theme(axis.text.y = element_text(size = 20))
@@ -667,6 +761,7 @@ barplot_ego_WT_DKO_con_BP_s <- barplot(ego_WT_DKO_con_BP_s, showCategory = 10) +
 #| label: fig-go-bp-barplots
 #| echo: false
 #| fig-cap: "Gene Ontology (Biological Process) enrichment of significantly differentially expressed genes (padj < 0.05) in WT (a), DKO (b) and WT case vs DKO case (c) lung samples. Terms were simplified to reduce redundancy (Wang similarity, cutoff = 0.7)."
+#| fig-scap: ["Gene Ontology enrichment"]
 #| fig-subcap: ["WT Control vs Case", "DKO Control vs Case", "WT Case vs DKO Case", "WT Control vs DKO Control"]
 #| fig-pos: "H"
 #| fig-width: 12
@@ -674,10 +769,13 @@ barplot_ego_WT_DKO_con_BP_s <- barplot(ego_WT_DKO_con_BP_s, showCategory = 10) +
 #| layout-ncol: 2
 #| out-width: "100%"
 
+#-------------------------------------------------------------------------
+# enrichGO barplot panel for WT, DKO and WT case vs DKO case
+#-------------------------------------------------------------------------
+
 barplot_ego_WT_BP_s
 barplot_ego_DKO_BP_s
 barplot_ego_WT_DKO_BP_s
-barplot_ego_WT_DKO_con_BP_s
 
 ```
 
@@ -695,6 +793,11 @@ The direct comparison between infected WT and infected DKO samples (@fig-go-bp-b
 #| label: tbl-important-genes
 #| echo: false
 #| tbl-cap: "Selected genes showing significant differential expression in WT control vs case, DKO control vs case, and WT case vs DKO case comparisons. Genes were selected based on adjusted p-values and log₂ fold changes and include interferon- and immune-related candidates previously reported in Singhania et al. (2019). For each gene, the corresponding contrast, Ensembl identifier, gene name, base mean expression, log₂ fold change, and adjusted p-value are shown."
+#| tbl-scap: ["Selected genes showing significant differential expression"]
+
+#-------------------------------------------------------------------------
+#plotting table with information of tracked genes using kable
+#-------------------------------------------------------------------------
 
 combined_hits[,1:7]|>
   kable(
@@ -716,19 +819,19 @@ combined_hits[,1:7]|>
 
 The quality assessment indicated high overall data quality, with no obvious technical outliers or batch effects detected. Principal component analysis and hierarchical clustering consistently revealed a clear separation of samples according to both infection status and genotype. This demonstrates that the dominant sources of variance in the dataset are biologically driven rather than technical, providing a robust foundation for downstream differential expression analyses.
 
-Comparative analysis of gene expression further highlighted a pronounced genotype-dependent response to infection. In wild-type mice, infection induced strong and statistically significant upregulation of a broad set of immune-related genes. Many of these genes correspond to those previously described as part of immune response modules, particularly modules associated with type I interferon signaling (L5) and IFNγ/STAT1-mediated pathways (L7). In contrast, the same genes were largely not differentially expressed in the double knockout condition, with only two genes reaching statistical significance. This indicates a substantial loss of coordinated immune gene induction in the absence of intact interferon signaling.
-
-The direct comparison between infected wild-type and infected double knockout samples further reinforced this observation. Genes belonging to interferon-dependent pathways were consistently overexpressed in wild-type mice relative to knockout animals, underscoring the central role of interferon signaling in shaping the transcriptional immune response. Rather than reflecting a simple reduction in response magnitude, the knockout phenotype appears to represent a collapse of an interferon-driven transcriptional program, affecting both early innate signaling and downstream effector mechanisms.
+Comparative analysis of gene expression further highlighted a pronounced genotype-dependent response to infection. In wild-type mice, infection induced strong and statistically significant upregulation of a broad set of immune-related genes. Many of these genes correspond to those previously described as part of immune response modules, particularly modules associated with type I interferon signaling (L5) and IFNγ/STAT1-mediated pathways (L7). Notably, several tracked genes—including Gbp2, Gbp5, and Stat2—were consistently overexpressed upon infection in wild-type animals. These genes are key components of interferon-driven host defense: guanylate-binding proteins such as GBP2 and GBP5 contribute to intracellular pathogen restriction, while STAT2 is an essential transcriptional mediator of type I interferon signaling. In contrast, the same genes were largely not differentially expressed in the double knockout condition, with only two of the tracked genes reaching statistical significance. This indicates a substantial loss of coordinated immune gene induction in the absence of intact interferon signaling.
 
 Functional enrichment analysis supported these findings at a systems level. While comparisons involving wild-type infected samples were enriched for immune-related Gene Ontology terms such as cytokine signaling, interferon response, and antigen processing, these categories were markedly reduced or absent in the double knockout comparison. This qualitative shift suggests that residual transcriptional changes observed in the knockout background are not part of a coordinated immune response but may instead reflect nonspecific or secondary effects of infection.
 
+Importantly, these results are in close agreement with previous transcriptomic analyses of Toxoplasma gondii infection, particularly those reported by Singhania et al., who identified robust interferon-driven immune modules as central determinants of the host response. The consistent overexpression of canonical interferon-stimulated genes observed in both studies supports the conclusion that interferon signaling constitutes a conserved and dominant axis of transcriptional immune activation in this infection model.
+
 Together, these results highlight the critical importance of both type I and type II interferon pathways in orchestrating effective host defense mechanisms. The absence of these signaling axes results in a failure to activate key immune genes despite pathogen exposure, emphasizing their indispensable role in initiating and amplifying immune responses. A limitation of this study is the use of bulk RNA-seq data, which does not allow cell-type–specific effects to be resolved. Future single-cell or time-resolved analyses would help disentangle cell-intrinsic transcriptional defects from potential differences in immune cell composition. Nonetheless, the present findings provide clear transcriptional evidence that interferon signaling is a central determinant of effective immune activation in this infection model.
 
-### AI Usage
+### AI Usage {.unnumbered .unlisted}
 
 Artificial intelligence tools were used to support efficient code development and linguistic refinement of the manuscript. In particular, ChatGPT was employed to assist with code optimization, troubleshooting, and stylistic polishing of the written text.
 
-### References
+### References {.unnumbered .unlisted}
 
 Conesa, A. et al. (2016) “A survey of best practices for RNA-seq data analysis,” Genome Biology, 17(1), p. 13. Available at: https://doi.org/10.1186/s13059-016-0881-8.
 
