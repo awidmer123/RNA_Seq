@@ -77,7 +77,8 @@ Differential expression analysis was performed using DESeq2’s Wald test. Two c
 
 ### 2.9 Gene Ontology enrichment analysis
 
-Functional enrichment analysis was conducted using the clusterProfiler package, specifically the `enrichGO` function. The list of differentially expressed genes (Ensembl IDs) served as input, while the set of all detected genes formed the universe background. The *Mus musculus* annotation database `org.Mm.eg.db` provided the necessary GO mappings. The Biological Process (BP) ontology was examined, and resulting GO terms were summarised and visualised using standard clusterProfiler plotting functions. Interpretation focused on immune-related processes known to be involved in *Toxoplasma* infection and interferon signalling based on Singhania et al. (2019).
+Functional enrichment analysis was conducted using the clusterProfiler package, specifically the `enrichGO` function. The list of differentially expressed genes (Ensembl IDs) served as input, while the set of all detected genes formed the universe background. The *Mus musculus* annotation database `org.Mm.eg.db` provided the necessary GO mappings. The Biological Process (BP) ontology was examined, and resulting GO terms were summarised and visualised using standard clusterProfiler plotting functions. 
+Interpretation focused on immune-related processes known to be involved in Toxoplasma infection and interferon signalling based on Singhania et al. (2019). Specifically, genes previously reported to be associated with interferon-driven immune responses were selected as a reference set and systematically tracked across contrasts. Their differential expression statistics were summarised in Table 2 to enable direct comparison between the current dataset and published signatures. The majority of tracked genes originated from modules L5 and L7, which were previously associated with interferon-driven inflammatory responses and innate immune activation during pulmonary Toxoplasma infection.
 
 ## 3. Results
 
@@ -273,6 +274,8 @@ WT_con_VS_WT_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_W
 DKO_con_VS_DKO_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_DKO_Case", "Lung_DKO_Control"))
 
 WT_case_VS_DKO_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_DKO_Case", "Lung_WT_Case"))
+
+WT_con_VS_DKO_con <- results(counts_dds_DESeq, contrast = c("condition", "Lung_DKO_Control", "Lung_WT_Control"))
 ```
 
 ```{r}
@@ -321,7 +324,7 @@ module_df <- module_df %>%
 wt_annot  <- res_to_annot(WT_con_VS_WT_case, module_df)
 dko_annot <- res_to_annot(DKO_con_VS_DKO_case, module_df)
 wt_dko_annot <- res_to_annot(WT_case_VS_DKO_case, module_df)
-
+wt_dko_con_annot <- res_to_annot(WT_con_VS_DKO_con, module_df)
 
 #classical from literature derived genes that are involved in immune response and ifn related
 ifn_immune_genes <- c(
@@ -338,8 +341,9 @@ ifn_immune_genes <- c(
 wt_hits  <- pick_candidates(wt_annot,  "WT: infected vs control")
 dko_hits <- pick_candidates(dko_annot, "DKO: infected vs control")
 wt_dko_hits <- pick_candidates(wt_dko_annot, "WT infected vs DKO infected")
+wt_dko_con_hits <- pick_candidates(wt_dko_con_annot, "WT control vs DKO control")
 
-combined_hits <- rbind(wt_hits, dko_hits, wt_dko_hits)
+combined_hits <- rbind(wt_hits, dko_hits, wt_dko_hits, wt_dko_con_hits)
 
 ```
 
@@ -349,7 +353,7 @@ combined_hits <- rbind(wt_hits, dko_hits, wt_dko_hits)
 
 
 
-# --- Map ENSMUSG -> gene symbol (English comments, <-) ---
+# --- Map ENSMUSG -> gene symbol ---
 lung_map <- read.csv("Lung modules.csv", header = FALSE, stringsAsFactors = FALSE)
 colnames(lung_map) <- c("ensembl_id", "gene_name", "module")
 
@@ -367,12 +371,14 @@ get_labels <- function(res, map_vec) {
   }
 }
 
-# --- Define the EXACT genes you want to label (from your Table 2 screenshot) ---
+# --- Define the exact genes you want to label ---
 lab_WT <- wt_hits$gene_name
 
 lab_DKO <- dko_hits$gene_name
 
 lab_WTca_vs_DKOca <- wt_dko_hits$gene_name
+
+lab_WTco_vs_DKOco <- wt_dko_con_hits$gene_name
 
 # --- Build volcanoes with mapping + selectLab ---
 Volcano_WT <- EnhancedVolcano(
@@ -408,6 +414,16 @@ Volcano_WTca_vs_DKOca <- EnhancedVolcano(
   max.overlaps = Inf
 ) + panel_theme_volcano
 
+Volcano_WTco_vs_DKOco <- EnhancedVolcano(
+  WT_con_VS_DKO_con,
+  lab = get_labels(WT_con_VS_DKO_con, ens2sym),
+  x = "log2FoldChange",
+  y = "padj",
+  title = NULL,
+  selectLab = lab_WTco_vs_DKOco,
+  drawConnectors = TRUE,
+  max.overlaps = Inf
+) + panel_theme_volcano
 ```
 
 ```{r}
@@ -425,19 +441,24 @@ de_DKO <- res_DKO[!is.na(res_DKO$padj) & res_DKO$padj < 0.05, ]
 res_WT_DKO <- as.data.frame(WT_case_VS_DKO_case)
 de_WT_DKO <- res_WT_DKO[!is.na(res_WT_DKO$padj) & res_WT_DKO$padj < 0.05, ]
 
+res_WT_DKO_con <- as.data.frame(WT_con_VS_DKO_con)
+de_WT_DKO_con <- res_WT_DKO_con[!is.na(res_WT_DKO_con$padj) & res_WT_DKO_con$padj < 0.05, ]
+
 #creating summary table
 summary_DE <- data.frame(
-  Comparison = c("WT Control vs Case", "DKO Control vs Case", "WT Case vs DKO Case"),
-  DE_genes = c(nrow(de_WT), nrow(de_DKO), nrow(de_WT_DKO)),
+  Comparison = c("WT Control vs Case", "DKO Control vs Case", "WT Case vs DKO Case", "WT Control vs DKO Control"),
+  DE_genes = c(nrow(de_WT), nrow(de_DKO), nrow(de_WT_DKO), nrow(de_WT_DKO_con)),
   Upregulated = c(
     sum(de_WT$log2FoldChange > 0),
     sum(de_DKO$log2FoldChange > 0),
-    sum(de_WT_DKO$log2FoldChange > 0)
+    sum(de_WT_DKO$log2FoldChange > 0),
+    sum(de_WT_DKO_con$log2FoldChange > 0)
   ),
   Downregulated = c(
     sum(de_WT$log2FoldChange < 0),
     sum(de_DKO$log2FoldChange < 0),
-    sum(de_WT_DKO$log2FoldChange > 0)
+    sum(de_WT_DKO$log2FoldChange < 0),
+    sum(de_WT_DKO_con$log2FoldChange < 0)
   )
 )
 ```
@@ -477,7 +498,7 @@ As summarised in @tbl-DE-genes, infection induced widespread transcriptional cha
 #| echo: false
 #| layout-ncol: 2
 #| fig-cap: "Volcano plots illustrating differential gene expression in lung tissue following Toxoplasma gondii infection. Shown are (a) WT control vs case, (b) DKO control vs case, and (c) WT case vs DKO case. Each point represents one gene; the x-axis shows log₂ fold change and the y-axis shows −log₁₀ adjusted p-values (DESeq2 Wald test). Labeled genes correspond to selected immune-related genes summarized in Table 2."
-#| fig-subcap: ["WT control vs case", "DKO control vs case", "WT case vs DKO case"]
+#| fig-subcap: ["WT Control vs Case", "DKO Control vs Case", "WT Case vs DKO Case", "WT Control vs DKO Control"]
 #| fig-pos: "H"
 #| fig-width: 12
 #| fig-height: 8
@@ -486,6 +507,7 @@ As summarised in @tbl-DE-genes, infection induced widespread transcriptional cha
 Volcano_WT
 Volcano_DKO
 Volcano_WTca_vs_DKOca
+Volcano_WTco_vs_DKOco
 
 ```
 
@@ -508,17 +530,20 @@ universe_genes <- rownames(counts_dds_DESeq)
 res_WT <- WT_con_VS_WT_case
 res_DKO <- DKO_con_VS_DKO_case
 res_WT_DKO <- WT_case_VS_DKO_case
+res_WT_DKO_con <- WT_con_VS_DKO_con
 
 
 # Significant genes (padj < 0.05, ni NAs)
 res_WT_sig <- res_WT[!is.na(res_WT$padj) & res_WT$padj < 0.05, ]
 res_DKO_sig <- res_DKO[!is.na(res_DKO$padj) & res_DKO$padj < 0.05, ]
 res_WT_DKO_sig <- res_WT_DKO[!is.na(res_WT_DKO$padj) & res_WT_DKO$padj < 0.05, ]
+res_WT_DKO_con_sig <- res_WT_DKO_con[!is.na(res_WT_DKO_con$padj) & res_WT_DKO_con$padj < 0.05, ]
 
 
 de_genes_WT <- rownames(res_WT_sig)  # Ensembl-IDs der DE-Gene
 de_genes_DKO <- rownames(res_DKO_sig)
 de_genes_WT_DKO <- rownames(res_WT_DKO_sig)
+de_genes_WT_DKO_con <- rownames(res_WT_DKO_con_sig)
 
 ego_WT_BP <- enrichGO(
   gene          = de_genes_WT,      # DE genes
@@ -556,10 +581,23 @@ ego_WT_DKO_BP <- enrichGO(
   readable      = TRUE              # mapping Ensembl -> Gene Symbols
 )
 
+ego_WT_DKO_con_BP <- enrichGO(
+  gene          = de_genes_WT_DKO_con,      # DE genes
+  universe      = universe_genes,   # all tested genes
+  OrgDb         = org.Mm.eg.db,     # Mouse Annotation
+  keyType       = "ENSEMBL",        # format of IDs
+  ont           = "BP",             # "BP"
+  pAdjustMethod = "BH",
+  pvalueCutoff  = 0.05,
+  qvalueCutoff  = 0.2,
+  readable      = TRUE              # mapping Ensembl -> Gene Symbols
+)
+
 # Sort by adjusted p-value (most significant first)
 ego_res <- ego_WT_BP@result[order(ego_WT_BP@result$p.adjust), ]
 ego_res_DKO <- ego_DKO_BP@result[order(ego_DKO_BP@result$p.adjust),]
 ego_res_WT_DKO <- ego_WT_DKO_BP@result[order(ego_WT_DKO_BP@result$p.adjust),]
+ego_res_WT_DKO_con <-ego_WT_DKO_con_BP@result[order(ego_WT_DKO_con_BP@result$p.adjust),]
 # Keep only top 50 (adjust if you want 100)
 ego_WT_BP_top <- ego_WT_BP
 ego_WT_BP_top@result <- ego_res[1:50, ]
@@ -569,6 +607,9 @@ ego_DKO_BP_top@result <- ego_res_DKO[1:50, ]
 
 ego_DKO_WT_BP_top <- ego_WT_DKO_BP
 ego_DKO_WT_BP_top@result <- ego_res_WT_DKO[1:50,]
+
+ego_DKO_WT_con_BP_top <- ego_WT_DKO_con_BP
+ego_DKO_WT_con_BP_top@result <- ego_res_WT_DKO_con[1:50,]
 
 #simplify GO term matrix to filter out redundancy
 ego_WT_BP_s <- simplify(
@@ -595,6 +636,16 @@ ego_WT_DKO_BP_s <- simplify(
   select_fun = min
 )
 
+ego_WT_DKO_con_BP_s <- simplify(
+  ego_DKO_WT_con_BP_top,
+  measure = "Wang",
+  cutoff = 0.7,
+  by = "p.adjust",
+  select_fun = min
+)
+
+# barplots of simplified GO terms matrix
+
 barplot_ego_WT_BP_s <- barplot(ego_WT_BP_s, showCategory = 10) +
   panel_theme_go +
   theme(axis.text.y = element_text(size = 20))
@@ -607,13 +658,16 @@ barplot_ego_WT_DKO_BP_s <- barplot(ego_WT_DKO_BP_s, showCategory = 10) +
   panel_theme_go +
   theme(axis.text.y = element_text(size = 20))
 
+barplot_ego_WT_DKO_con_BP_s <- barplot(ego_WT_DKO_con_BP_s, showCategory = 10) +
+  panel_theme_go +
+  theme(axis.text.y = element_text(size = 20))
 ```
 
 ```{r}
 #| label: fig-go-bp-barplots
 #| echo: false
 #| fig-cap: "Gene Ontology (Biological Process) enrichment of significantly differentially expressed genes (padj < 0.05) in WT (a), DKO (b) and WT case vs DKO case (c) lung samples. Terms were simplified to reduce redundancy (Wang similarity, cutoff = 0.7)."
-#| fig-subcap: ["WT control vs case", "DKO control vs case", "WT case vs DKO case"]
+#| fig-subcap: ["WT Control vs Case", "DKO Control vs Case", "WT Case vs DKO Case", "WT Control vs DKO Control"]
 #| fig-pos: "H"
 #| fig-width: 12
 #| fig-height: 8
@@ -623,6 +677,7 @@ barplot_ego_WT_DKO_BP_s <- barplot(ego_WT_DKO_BP_s, showCategory = 10) +
 barplot_ego_WT_BP_s
 barplot_ego_DKO_BP_s
 barplot_ego_WT_DKO_BP_s
+barplot_ego_WT_DKO_con_BP_s
 
 ```
 
@@ -661,7 +716,7 @@ combined_hits[,1:7]|>
 
 The quality assessment indicated high overall data quality, with no obvious technical outliers or batch effects detected. Principal component analysis and hierarchical clustering consistently revealed a clear separation of samples according to both infection status and genotype. This demonstrates that the dominant sources of variance in the dataset are biologically driven rather than technical, providing a robust foundation for downstream differential expression analyses.
 
-Comparative analysis of gene expression further highlighted a pronounced genotype-dependent response to infection. In wild-type mice, infection induced strong and statistically significant upregulation of a broad set of immune-related genes. Many of these genes correspond to those previously described as part of immune response modules, particularly modules associated with type I interferon signaling and IFNγ/STAT1-mediated pathways. In contrast, the same genes were largely not differentially expressed in the double knockout condition, with only two genes reaching statistical significance. This indicates a substantial loss of coordinated immune gene induction in the absence of intact interferon signaling.
+Comparative analysis of gene expression further highlighted a pronounced genotype-dependent response to infection. In wild-type mice, infection induced strong and statistically significant upregulation of a broad set of immune-related genes. Many of these genes correspond to those previously described as part of immune response modules, particularly modules associated with type I interferon signaling (L5) and IFNγ/STAT1-mediated pathways (L7). In contrast, the same genes were largely not differentially expressed in the double knockout condition, with only two genes reaching statistical significance. This indicates a substantial loss of coordinated immune gene induction in the absence of intact interferon signaling.
 
 The direct comparison between infected wild-type and infected double knockout samples further reinforced this observation. Genes belonging to interferon-dependent pathways were consistently overexpressed in wild-type mice relative to knockout animals, underscoring the central role of interferon signaling in shaping the transcriptional immune response. Rather than reflecting a simple reduction in response magnitude, the knockout phenotype appears to represent a collapse of an interferon-driven transcriptional program, affecting both early innate signaling and downstream effector mechanisms.
 
