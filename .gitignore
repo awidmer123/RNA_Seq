@@ -25,7 +25,6 @@ scripts/3_FeatureCounts/add_MultiQC.slurm
 # ======================
 logs/
 config/
-resources/
 
 # ======================
 # System / Editor files
