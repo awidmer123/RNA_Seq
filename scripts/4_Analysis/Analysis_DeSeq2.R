@@ -1,8 +1,10 @@
 
-### 5. Exploratory data analysis
+### Exploratory data analysis
 
 #MAIN GOAL: finding the genes that lead to differences between WT and our sampels etc.........
 
+
+#loading necessary packages for general data anlysis
 
 #install necessary package
 if (!require("BiocManager", quietly = TRUE))
@@ -92,13 +94,18 @@ heatmap
 #---------------------------------------------------------------
 ### 6. Differential expression analysis
 
-#data for differential gene analysis
-WT_con_VS_WT_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_WT_Control", "Lung_WT_Case"))
 
-DKO_con_VS_DKO_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_DKO_Control", "Lung_DKO_Case"))
+# WT control vs WT case
+WT_con_VS_WT_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_WT_Case", "Lung_WT_Control"))
 
-WT_con_VS_DKO_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_WT_Control", "Lung_DKO_Case"))
+# DKO control vs DKO case
+DKO_con_VS_DKO_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_DKO_Case", "Lung_DKO_Control"))
 
+# WT case vs DKO case
+WT_case_VS_DKO_case <- results(counts_dds_DESeq, contrast = c("condition", "Lung_DKO_Case", "Lung_WT_Case"))
+
+# WT control vs DKO control
+WT_con_VS_DKO_con <- results(counts_dds_DESeq, contrast = c("condition", "Lung_DKO_Control", "Lung_WT_Control"))
 
 # --- Map ENSMUSG -> gene symbol (English comments, <-) ---
 lung_map <- read.csv("Lung modules.csv", header = FALSE, stringsAsFactors = FALSE)
@@ -118,7 +125,9 @@ get_labels <- function(res, map_vec) {
   }
 }
 
-# --- Define the EXACT genes you want to label (from your Table 2 screenshot) ---
+# --- Define the EXACT genes you want to label ---
+# the gene labels are exctracted from the output of the script "Important_genes.R".
+
 lab_WT <- c("Tap1","Stat2","Irf7","Gbp5","Gbp2","Ifit2","Psmb8","Zbp1","Gbp10","Gbp3")
 
 lab_DKO <- c("Oasl1","Oas2","Oas3","Cxcl10","Mx1","Gbp10","Cxcl9","Rsad2","Acta1","Krt13")
@@ -126,6 +135,20 @@ lab_DKO <- c("Oasl1","Oas2","Oas3","Cxcl10","Mx1","Gbp10","Cxcl9","Rsad2","Acta1
 lab_WTca_vs_DKOca <- c("Tap1","Stat2","Irf7","Ifit1","Gbp5","Gbp2","Gbp3","Oas2","Ifit2","Oasl1")
 
 # --- Build volcanoes with mapping + selectLab ---
+
+# setting up a plot theme
+panel_theme_volcano <- theme_minimal(base_size = 20) +
+  theme(
+    plot.title = element_blank(),
+    axis.title = element_text(size = 20),
+    axis.text  = element_text(size = 18),
+    legend.title = element_text(size = 18),
+    legend.text  = element_text(size = 16),
+    panel.grid.minor = element_blank(),
+    legend.position = "bottom"   # ok für volcano (wenn’s passt)
+  )
+
+# WT
 Volcano_WT <- EnhancedVolcano(
   WT_con_VS_WT_case,
   lab = get_labels(WT_con_VS_WT_case, ens2sym),
@@ -137,6 +160,7 @@ Volcano_WT <- EnhancedVolcano(
   max.overlaps = Inf
 ) + panel_theme_volcano
 
+# DKO 
 Volcano_DKO <- EnhancedVolcano(
   DKO_con_VS_DKO_case,
   lab = get_labels(DKO_con_VS_DKO_case, ens2sym),
@@ -148,6 +172,7 @@ Volcano_DKO <- EnhancedVolcano(
   max.overlaps = Inf
 ) + panel_theme_volcano
 
+# WT case vs DKO case
 Volcano_WTca_vs_DKOca <- EnhancedVolcano(
   WT_case_VS_DKO_case,
   lab = get_labels(WT_case_VS_DKO_case, ens2sym),
@@ -165,25 +190,37 @@ Volcano_WTca_vs_DKOca
 #---------------------------------------------------------------
 
 # DE genes (padj < 0.05)
-#extracting numbers
-res_WT <- as.data.frame(WT_con_VS_WT_case)
-de_WT <- res_WT[!is.na(res_WT$padj) & res_WT$padj < 0.05, ]
-
+#extracting numbers for DKO
 res_DKO <- as.data.frame(DKO_con_VS_DKO_case)
 de_DKO <- res_DKO[!is.na(res_DKO$padj) & res_DKO$padj < 0.05, ]
 
+#extracting numbers for case vs case
+res_WT_DKO <- as.data.frame(WT_case_VS_DKO_case)
+de_WT_DKO <- res_WT_DKO[!is.na(res_WT_DKO$padj) & res_WT_DKO$padj < 0.05, ]
+
+#extracting numbers for control vs control
+res_WT_DKO_con <- as.data.frame(WT_con_VS_DKO_con)
+de_WT_DKO_con <- res_WT_DKO_con[!is.na(res_WT_DKO_con$padj) & res_WT_DKO_con$padj < 0.05, ]
+
+#extracting numbers for control vs control
+res_WT_DKO_con <- as.data.frame(WT_con_VS_DKO_con)
+de_WT_DKO_con <- res_WT_DKO_con[!is.na(res_WT_DKO_con$padj) & res_WT_DKO_con$padj < 0.05, ]
+
 #creating summary table
 summary_DE <- data.frame(
-  Comparison = c("WT Control vs Case", "DKO Control vs Case"),
-  DE_genes = c(nrow(de_WT), nrow(de_DKO)),
+  Comparison = c("WT Control vs Case", "DKO Control vs Case", "WT Case vs DKO Case", "WT Control vs DKO Control"),
+  DE_genes = c(nrow(de_WT), nrow(de_DKO), nrow(de_WT_DKO), nrow(de_WT_DKO_con)),
   Upregulated = c(
     sum(de_WT$log2FoldChange > 0),
-    sum(de_DKO$log2FoldChange > 0)
+    sum(de_DKO$log2FoldChange > 0),
+    sum(de_WT_DKO$log2FoldChange > 0),
+    sum(de_WT_DKO_con$log2FoldChange > 0)
   ),
   Downregulated = c(
     sum(de_WT$log2FoldChange < 0),
-    sum(de_DKO$log2FoldChange < 0)
+    sum(de_DKO$log2FoldChange < 0),
+    sum(de_WT_DKO$log2FoldChange < 0),
+    sum(de_WT_DKO_con$log2FoldChange < 0)
   )
 )
-
 summary_DE

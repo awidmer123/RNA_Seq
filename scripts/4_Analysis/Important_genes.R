@@ -1,20 +1,19 @@
 
+#-------------------------------------------------------------------------
+# Finding and tracking some important genes, mentioned in Singhania et al. 2019
+#-------------------------------------------------------------------------
+
 #setting up working directory
 setwd("/home/andri/Desktop/UNIFR/2_Bioinf/RNA_Sequencing")
-
-#loading necessary packages
-library(dplyr)
-library(knitr)
-library(kableExtra)
 
 #loading and modifying data
 module_df <- read.table("Lung modules.csv",sep = ",")
 colnames(module_df) <- c("ensembl_id", "Gene.name", "Module")
 
-#------------------FUNCTIONS-----------------------------------------------
+#------------------FUNCTIONS-------------------------------------------
 
 # 1. defining function that annotates modules
-res_to_annot <- function(res_obj, module_df) {
+res_to_annot <- function(res_obj, module_Fdf) {
   as.data.frame(res_obj) %>%
     tibble::rownames_to_column("ensembl_id") %>%
     filter(!is.na(padj), !is.na(log2FoldChange)) %>%     
@@ -31,7 +30,7 @@ pick_candidates <- function(df, label, padj_cutoff = 0.05, lfc_cutoff = 1, top_n
     select(contrast, ensembl_id, gene_name, module, baseMean, log2FoldChange, padj, is_ifn) %>%
     head(top_n)
 }
-#--------------------------------------------------------------------------
+#----------------------------------------------------------------------
 
 #transmute module dataframe
 module_df <- module_df %>%
@@ -44,7 +43,8 @@ module_df <- module_df %>%
 #using "res_to_annot" function
 wt_annot  <- res_to_annot(WT_con_VS_WT_case, module_df)
 dko_annot <- res_to_annot(DKO_con_VS_DKO_case, module_df)
-
+wt_dko_annot <- res_to_annot(WT_case_VS_DKO_case, module_df)
+wt_dko_con_annot <- res_to_annot(WT_con_VS_DKO_con, module_df)
 
 #classical from literature derived genes that are involved in immune response and ifn related
 ifn_immune_genes <- c(
@@ -60,32 +60,23 @@ ifn_immune_genes <- c(
 #using the pick_candidates function to select for intersting hits
 wt_hits  <- pick_candidates(wt_annot,  "WT: infected vs control")
 dko_hits <- pick_candidates(dko_annot, "DKO: infected vs control")
+wt_dko_hits <- pick_candidates(wt_dko_annot, "WT infected vs DKO infected")
+wt_dko_con_hits <- pick_candidates(wt_dko_con_annot, "WT control vs DKO control") #this specific part will not be shown in the final report, since in the view of the author, it does not support the understanding of the data.
 
-wt_hits
-dko_hits
+combined_hits <- rbind(wt_hits, dko_hits, wt_dko_hits)
 
-dko_hits |>
+#-------------------------------------------------------------------------
+#plotting table with information of tracked genes using kable
+#-------------------------------------------------------------------------
+
+combined_hits[,1:7]|>
   kable(
     format = "latex",
-    booktabs = TRUE,
-    caption = "Selected significantly differentially expressed genes in DKO case vs control."
+    booktabs = TRUE
   ) |>
   kable_styling(
     latex_options = c("hold_position", "striped", "scale_down"),
     font_size = 9
   )
-
-wt_hits |>
-  kable(
-    format = "latex",
-    booktabs = TRUE,
-    caption = "Selected significantly differentially expressed genes in WT case vs control."
-  ) |>
-  kable_styling(
-    latex_options = c("hold_position", "striped", "scale_down"),
-    font_size = 9
-  )
-
-
 
 
