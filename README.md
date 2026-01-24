@@ -6,6 +6,8 @@ This repository contains the complete RNA-Seq analysis workflow for the project
 The analysis focuses on lung tissue from wild-type (WT) and interferon receptor double knockout (DKO) mice under infected (“case”) and uninfected (“control”) conditions, and follows a reproducible, stepwise RNA-Seq workflow from raw data quality control to downstream statistical and functional analyses.
 
 ---
+## Repository structure
+---
 
 ## scripts/
 
