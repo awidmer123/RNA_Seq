@@ -1,4 +1,9 @@
+# RNA_Seq
 
+This repository contains the complete RNA-Seq analysis workflow for the project  
+**“The Role of Interferon Signaling in the Pulmonary Immune Response”**, conducted as part of the RNA sequencing practical course (2025).
+
+The analysis focuses on lung tissue from wild-type (WT) and interferon receptor double knockout (DKO) mice under infected (“case”) and uninfected (“control”) conditions, and follows a reproducible, stepwise RNA-Seq workflow from raw data quality control to downstream statistical and functional analyses.
 
 ---
 
