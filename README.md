@@ -7,7 +7,6 @@ The analysis focuses on lung tissue from wild-type (WT) and interferon receptor 
 
 ---
 ## Repository structure
----
 
 ## scripts/
 
