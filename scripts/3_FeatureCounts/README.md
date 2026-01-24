@@ -4,7 +4,7 @@ This directory contains scripts for quantifying gene-level read counts from alig
 
 ## Contents and running order
 
-### 1. `featureCont.slurm`
+### 1. `featureCount.slurm`
 SLURM batch script running **featureCounts** to assign aligned reads to genomic features (genes) based on a provided annotation file (GTF).  
 The script generates raw count matrices that serve as the primary input for all downstream differential expression analyses.
 
