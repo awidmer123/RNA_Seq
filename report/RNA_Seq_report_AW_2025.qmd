@@ -38,9 +38,7 @@ Type I and type II interferons are key mediators of anti-parasitic immunity and 
 
 RNA sequencing (RNA-Seq) enables unbiased, genome-wide quantification of gene expression and has become a standard approach for analysing transcriptional responses across biological conditions (Wang et al., 2009). Owing to its sensitivity and broad dynamic range, RNA-Seq is especially well suited for studying complex immune responses, where coordinated regulation of large gene sets is expected (Conesa et al., 2016).
 
-The RNA-Seq data analysed in this project originate from a study by Singhania et al., which comprehensively investigated immune responses to T. gondii infection in mice with different genetic backgrounds. In that study, wild-type (WT) animals were compared to a double knockout (DKO) model lacking both the type I interferon receptor (Ifnar-/-) and the type II interferon receptor (Ifngr-/-), enabling a broad analysis of interferon-dependent transcriptional responses to infection across multiple tissues.
-
-In this practical course, RNA-Seq subsamples derived from the experimental setup of Singhania et al. were provided by the university and re-analysed. The present project focuses specifically on lung tissue and aims to compare bulk transcriptional responses between infected (“case”) and uninfected (“control”) samples in WT and DKO mice. By analysing the two genotypes separately, this study seeks to assess how the absence of both type I and type II interferon signalling influences the magnitude and nature of infection-induced gene expression changes in the lung.
+The RNA-Seq data analysed in this project originate from a study by Singhania et al., which investigated immune responses to Toxoplasma gondii infection in mice with different genetic backgrounds. In that study, wild-type (WT) animals were compared to a double knockout (DKO) model lacking both the type I and type II interferon receptors (Ifnar⁻/⁻ and Ifngr⁻/⁻), enabling a systematic assessment of interferon-dependent transcriptional responses across multiple tissues. In the present practical course, RNA-Seq subsamples derived from this experimental setup were provided by the university and re-analysed with a specific focus on lung tissue. The aim of this project was to compare bulk transcriptional responses between infected (“case”) and uninfected (“control”) samples in WT and DKO mice, thereby assessing how the absence of both type I and type II interferon signalling affects infection-induced gene expression in the lung.
 
 The overall aim of this project was to compare lung-specific transcriptional responses to Toxoplasma gondii infection between wild-type and interferon receptor–deficient mice. The analysis follows an exploratory approach to characterise how disruption of type I and type II interferon signalling affects infection-induced gene expression in lung tissue. To this end, a standard RNA-Seq analysis workflow was applied, including quality control of sequencing data, read alignment to a reference genome, gene-level quantification, and statistical testing for differential expression. Emphasis was placed on reproducibility, appropriate statistical analysis, and careful assessment of data quality to enable a robust comparison of transcriptional responses between genotypes.
 
@@ -84,7 +82,7 @@ DESeq2’s internal filtering removed genes with insufficient read support. Libr
 
 Principal component analysis (PCA) and gene expression heatmaps were generated using rlog - transformed counts. These visualisations revealed how samples cluster based on their global gene expression profiles and allowed the assessment of replicate consistency and separation of experimental groups.
 
-Differential expression analysis was performed using DESeq2’s Wald test. Two contrasts were evaluated independently: (i) WT Case vs WT Control, and (ii) DKO Case vs DKO Control. Genes were considered differentially expressed at a false discovery rate of `padj < 0.05`. No additional log2 fold-change threshold was applied. For each contrast, the total number of significant differentially expressed genes (DEGs) as well as the counts of up- and down-regulated genes were recorded. Normalised counts of selected biologically relevant genes were inspected to support interpretation of genotype-specific responses.
+Differential expression analysis was performed using DESeq2’s Wald test. Infection-induced transcriptional changes were first assessed within each genotype by comparing infected (“case”) and uninfected (“control”) samples for wild-type (WT) and double knockout (DKO) mice separately. In addition, direct genotype-dependent differences were evaluated by contrasting infected WT and infected DKO samples. Genes were considered differentially expressed at a false discovery rate of padj < 0.05, and no additional log₂ fold-change threshold was applied. For each contrast, the total number of significant differentially expressed genes (DEGs) as well as the numbers of up- and down-regulated genes were recorded. Normalised counts of selected biologically relevant genes were further inspected to support interpretation of genotype-specific responses.
 
 ### 2.9 Gene Ontology enrichment analysis
 
@@ -163,7 +161,7 @@ counts_dds_rlog  <- rlog(counts_dds_DESeq)
 #| include: false
 
 #-------------------------------------------------------------------------
-#plot and table design
+#plot, table and color design
 #-------------------------------------------------------------------------
 
 #loading necessary packages for table and plot design
@@ -278,6 +276,10 @@ heatmap <- pheatmap(
 
 ```
 
+As shown in @fig-pca-hm (a), samples cluster according to both genotype and infection status. WT and DKO samples separate along the first principal component, while infected and control samples show additional separation along the second component. Biological replicates group closely together, indicating good reproducibility and low within-group variability.
+
+Figure @fig-pca-hm (b) shows the expression patterns of the 100 most variable genes across all samples. Hierarchical clustering reveals a clear separation of samples according to genotype and infection status. Replicates within the same condition cluster closely together, while distinct expression profiles are observed between WT and DKO samples. \FloatBarrier
+
 ```{r}
 #| label: fig-pca-hm
 #| echo: false
@@ -299,12 +301,6 @@ pca_plot
 grid::grid.newpage() 
 grid::grid.draw(heatmap$gtable)
 ```
-
-\FloatBarrier
-
-As shown in @fig-pca-hm (a), samples cluster according to both genotype and infection status. WT and DKO samples separate along the first principal component, while infected and control samples show additional separation along the second component. Biological replicates group closely together, indicating good reproducibility and low within-group variability.
-
-Figure @fig-pca-hm (b) shows the expression patterns of the 100 most variable genes across all samples. Hierarchical clustering reveals a clear separation of samples according to genotype and infection status. Replicates within the same condition cluster closely together, while distinct expression profiles are observed between WT and DKO samples. \FloatBarrier
 
 ```{r}
 #| label: preparing results tables
@@ -537,6 +533,8 @@ summary_DE <- data.frame(
 
 ### 3.3 Differential gene expression analysis
 
+As summarised in @tbl-DE-genes, infection induced widespread transcriptional changes in lung tissue in both WT and DKO mice, with more than 10,000 genes showing significant differential expression in each genotype. In contrast, the direct comparison between infected WT and infected DKO samples yielded a smaller, yet substantial, set of differentially expressed genes, indicating genotype-dependent differences in transcriptional responses specifically under infectious conditions.
+
 ```{r}
 #| label: tbl-DE-genes
 #| echo: false
@@ -565,9 +563,11 @@ summary_DE |>
 
 ```
 
-\FloatBarrier
+As shown in @fig-volcano-panel (a), infection of WT mice leads to widespread transcriptional changes in lung tissue, with numerous genes displaying both large effect sizes and high statistical significance. This reflects a robust transcriptional response to T. gondii infection in WT animals.
 
-As summarised in @tbl-DE-genes, infection induced widespread transcriptional changes in lung tissue in both WT and DKO mice, with more than 10,000 genes showing significant differential expression in each genotype. In contrast, the direct comparison between infected WT and infected DKO samples yielded a smaller, yet substantial, set of differentially expressed genes, indicating genotype-dependent differences in transcriptional responses specifically under infectious conditions.
+In DKO mice @fig-volcano-panel (b), infection also results in extensive differential gene expression. Compared to WT mice, the overall distribution and magnitude of log₂ fold changes differ, suggesting that the absence of type I and type II interferon signalling alters the transcriptional response to infection.
+
+Importantly, the direct comparison of infected WT and infected DKO samples in @fig-volcano-panel (c) reveals pronounced genotype-dependent differences under infectious conditions. A substantial number of genes show strong differential expression between the two genotypes, supporting the conclusion that interferon receptor deficiency markedly reshapes infection-induced transcriptional programmes in lung tissue.
 
 ```{r}
 #| label: fig-volcano-panel
@@ -590,12 +590,6 @@ Volcano_DKO
 Volcano_WTca_vs_DKOca
 
 ```
-
-As shown in @fig-volcano-panel (a), infection of WT mice leads to widespread transcriptional changes in lung tissue, with numerous genes displaying both large effect sizes and high statistical significance. This reflects a robust transcriptional response to T. gondii infection in WT animals.
-
-In DKO mice @fig-volcano-panel (b), infection also results in extensive differential gene expression. Compared to WT mice, the overall distribution and magnitude of log₂ fold changes differ, suggesting that the absence of type I and type II interferon signalling alters the transcriptional response to infection.
-
-Importantly, the direct comparison of infected WT and infected DKO samples in @fig-volcano-panel (c) reveals pronounced genotype-dependent differences under infectious conditions. A substantial number of genes show strong differential expression between the two genotypes, supporting the conclusion that interferon receptor deficiency markedly reshapes infection-induced transcriptional programmes in lung tissue.
 
 ### 3.4 Functional enrichment analysis
 
@@ -757,6 +751,14 @@ barplot_ego_WT_DKO_con_BP_s <- barplot(ego_WT_DKO_con_BP_s, showCategory = 10) +
   theme(axis.text.y = element_text(size = 20))
 ```
 
+
+Gene Ontology (GO) enrichment analysis was performed on the sets of significantly differentially expressed genes to identify biological processes associated with infection- and genotype-dependent transcriptional changes (@fig-go-bp-barplots). In WT mice in @fig-go-bp-barplots (a), enriched Biological Process terms were predominantly related to immune activation, including leukocyte migration, chemotaxis, regulation of innate immune responses, and responses to biotic stimuli. These categories reflect a coordinated immune response to Toxoplasma gondii infection in lung tissue.
+
+In DKO mice (@fig-go-bp-barplots b), the enrichment profile differed from that observed in WT animals. In addition to leukocyte migration and cell–cell adhesion, terms associated with cytoskeletal organisation, muscle system processes, and wound healing were prominent, indicating an altered functional response to infection in the absence of type I and type II interferon signalling.
+
+The direct comparison between infected WT and infected DKO samples (@fig-go-bp-barplots c) revealed enrichment of GO terms related to regulation of inflammatory responses, immune effector processes, chemotaxis, and cell activation. These enriched categories highlight genotype-dependent differences in the functional organisation of infection-induced transcriptional responses. Only the most significant non-redundant GO terms are shown following semantic similarity-based simplification.
+
+
 ```{r}
 #| label: fig-go-bp-barplots
 #| echo: false
@@ -779,15 +781,12 @@ barplot_ego_WT_DKO_BP_s
 
 ```
 
-\FloatBarrier
 
-Gene Ontology (GO) enrichment analysis was performed on the sets of significantly differentially expressed genes to identify biological processes associated with infection- and genotype-dependent transcriptional changes (@fig-go-bp-barplots). In WT mice in @fig-go-bp-barplots (a), enriched Biological Process terms were predominantly related to immune activation, including leukocyte migration, chemotaxis, regulation of innate immune responses, and responses to biotic stimuli. These categories reflect a coordinated immune response to Toxoplasma gondii infection in lung tissue.
-
-In DKO mice (@fig-go-bp-barplots b), the enrichment profile differed from that observed in WT animals. In addition to leukocyte migration and cell–cell adhesion, terms associated with cytoskeletal organisation, muscle system processes, and wound healing were prominent, indicating an altered functional response to infection in the absence of type I and type II interferon signalling.
-
-The direct comparison between infected WT and infected DKO samples (@fig-go-bp-barplots c) revealed enrichment of GO terms related to regulation of inflammatory responses, immune effector processes, chemotaxis, and cell activation. These enriched categories highlight genotype-dependent differences in the functional organisation of infection-induced transcriptional responses. Only the most significant non-redundant GO terms are shown following semantic similarity-based simplification. \FloatBarrier
 
 ### 3.5 Comparison to Singhania et al.
+
+@tbl-important-genes highlights a subset of representative genes that are significantly differentially expressed across the analysed contrasts. The selected genes include multiple interferon-stimulated and immune-related transcripts, such as Tap1, Stat2, Irf7, and several Gbp family members, which show strong regulation upon infection. In addition, the direct comparison between infected WT and infected DKO samples reveals pronounced genotype-dependent differences for key immune effector genes. These examples illustrate how disruption of type I and type II interferon signalling alters infection-induced transcriptional responses in lung tissue.
+
 
 ```{r}
 #| label: tbl-important-genes
@@ -812,8 +811,6 @@ combined_hits[,1:7]|>
 ```
 
 \FloatBarrier
-
-@tbl-important-genes highlights a subset of representative genes that are significantly differentially expressed across the analysed contrasts. The selected genes include multiple interferon-stimulated and immune-related transcripts, such as Tap1, Stat2, Irf7, and several Gbp family members, which show strong regulation upon infection. In addition, the direct comparison between infected WT and infected DKO samples reveals pronounced genotype-dependent differences for key immune effector genes. These examples illustrate how disruption of type I and type II interferon signalling alters infection-induced transcriptional responses in lung tissue.
 
 ## 4. Discussion
 
