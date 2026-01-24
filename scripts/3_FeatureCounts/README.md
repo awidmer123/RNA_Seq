@@ -1,4 +1,4 @@
-# 3_FeatureCounts
+# 3_FeatureCount
 
 This directory contains scripts for quantifying gene-level read counts from aligned RNA-seq data and for integrating the resulting summaries into the overall quality control reporting.
 
