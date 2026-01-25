@@ -15,7 +15,6 @@ format:
         \usepackage{placeins}
 ---
 
-
 ## Abstract {.unnumbered .unlisted}
 
 Interferon signaling is a central component of host defense against intracellular pathogens. In this study, RNA-seq data from lung tissue of wild-type and double knockout mice were analyzed to investigate genotype-dependent transcriptional responses to infection. After rigorous quality assessment confirming high data integrity, exploratory analyses revealed clear clustering of samples by both infection status and genotype, indicating strong biologically driven effects. Differential expression analysis showed robust induction of immune-related genes in infected wild-type mice, particularly genes associated with interferon-regulated pathways. In contrast, the same genes were largely not differentially expressed in infected double knockout animals. Direct comparison of infected wild-type and knockout samples further demonstrated pronounced overexpression of interferon pathway genes in wild-type mice. Gene Ontology enrichment analysis supported these findings, with immune-related terms prominently enriched in comparisons involving wild-type infection but largely absent in the knockout condition. Together, these results indicate that intact type I and type II interferon signaling is essential for mounting a coordinated transcriptional immune response to infection, and that disruption of this axis leads to a profound loss of immune gene activation despite pathogen exposure.
@@ -26,7 +25,6 @@ Interferon signaling is a central component of host defense against intracellula
 \listoffigures
 \listoftables
 \newpage
-
 
 ## 1. Introduction
 
@@ -39,8 +37,6 @@ Type I and type II interferons are key mediators of anti-parasitic immunity and 
 RNA sequencing (RNA-Seq) enables unbiased, genome-wide quantification of gene expression and has become a standard approach for analysing transcriptional responses across biological conditions (Wang et al., 2009). Owing to its sensitivity and broad dynamic range, RNA-Seq is especially well suited for studying complex immune responses, where coordinated regulation of large gene sets is expected (Conesa et al., 2016).
 
 The RNA-Seq data analysed in this project originate from a study by Singhania et al., which investigated immune responses to Toxoplasma gondii infection in mice with different genetic backgrounds. In that study, wild-type (WT) animals were compared to a double knockout (DKO) model lacking both the type I and type II interferon receptors (Ifnar⁻/⁻ and Ifngr⁻/⁻), enabling a systematic assessment of interferon-dependent transcriptional responses across multiple tissues. In the present practical course, RNA-Seq subsamples derived from this experimental setup were provided by the university and re-analysed with a specific focus on lung tissue. The aim of this project was to compare bulk transcriptional responses between infected (“case”) and uninfected (“control”) samples in WT and DKO mice, thereby assessing how the absence of both type I and type II interferon signalling affects infection-induced gene expression in the lung.
-
-The overall aim of this project was to compare lung-specific transcriptional responses to Toxoplasma gondii infection between wild-type and interferon receptor–deficient mice. The analysis follows an exploratory approach to characterise how disruption of type I and type II interferon signalling affects infection-induced gene expression in lung tissue. To this end, a standard RNA-Seq analysis workflow was applied, including quality control of sequencing data, read alignment to a reference genome, gene-level quantification, and statistical testing for differential expression. Emphasis was placed on reproducibility, appropriate statistical analysis, and careful assessment of data quality to enable a robust comparison of transcriptional responses between genotypes.
 
 ## 2. Materials and Methods
 
@@ -82,18 +78,17 @@ DESeq2’s internal filtering removed genes with insufficient read support. Libr
 
 Principal component analysis (PCA) and gene expression heatmaps were generated using rlog - transformed counts. These visualisations revealed how samples cluster based on their global gene expression profiles and allowed the assessment of replicate consistency and separation of experimental groups.
 
-Differential expression analysis was performed using DESeq2’s Wald test. Infection-induced transcriptional changes were first assessed within each genotype by comparing infected (“case”) and uninfected (“control”) samples for wild-type (WT) and double knockout (DKO) mice separately. In addition, direct genotype-dependent differences were evaluated by contrasting infected WT and infected DKO samples. Genes were considered differentially expressed at a false discovery rate of padj < 0.05, and no additional log₂ fold-change threshold was applied. For each contrast, the total number of significant differentially expressed genes (DEGs) as well as the numbers of up- and down-regulated genes were recorded. Normalised counts of selected biologically relevant genes were further inspected to support interpretation of genotype-specific responses.
+Differential expression analysis was performed using DESeq2’s Wald test. Infection-induced transcriptional changes were first assessed within each genotype by comparing infected (“case”) and uninfected (“control”) samples for wild-type (WT) and double knockout (DKO) mice separately. In addition, direct genotype-dependent differences were evaluated by contrasting infected WT and infected DKO samples. Genes were considered differentially expressed at a false discovery rate of padj \< 0.05, and no additional log₂ fold-change threshold was applied. For each contrast, the total number of significant differentially expressed genes (DEGs) as well as the numbers of up- and down-regulated genes were recorded. Normalised counts of selected biologically relevant genes were further inspected to support interpretation of genotype-specific responses.
 
 ### 2.9 Gene Ontology enrichment analysis
 
-Functional enrichment analysis was conducted using the clusterProfiler package, specifically the `enrichGO` function. The list of differentially expressed genes (Ensembl IDs) served as input, while the set of all detected genes formed the universe background. The *Mus musculus* annotation database `org.Mm.eg.db` provided the necessary GO mappings. The Biological Process (BP) ontology was examined, and resulting GO terms were summarised and visualised using standard clusterProfiler plotting functions. 
-Interpretation focused on immune-related processes known to be involved in Toxoplasma infection and interferon signalling based on Singhania et al. (2019). Specifically, genes previously reported to be associated with interferon-driven immune responses were selected as a reference set and systematically tracked across contrasts. Their differential expression statistics were summarised in Table 2 to enable direct comparison between the current dataset and published signatures. The majority of tracked genes originated from modules L5 and L7, which were previously associated with interferon-driven inflammatory responses and innate immune activation during pulmonary Toxoplasma infection.
+Functional enrichment analysis was conducted using the clusterProfiler package, specifically the `enrichGO` function. The list of differentially expressed genes (Ensembl IDs) served as input, while the set of all detected genes formed the universe background. The *Mus musculus* annotation database `org.Mm.eg.db` provided the necessary GO mappings. The Biological Process (BP) ontology was examined, and resulting GO terms were summarised and visualised using standard clusterProfiler plotting functions. Interpretation focused on immune-related processes known to be involved in Toxoplasma infection and interferon signalling based on Singhania et al. (2019). Specifically, genes previously reported to be associated with interferon-driven immune responses were selected as a reference set and systematically tracked across contrasts. Their differential expression statistics were summarised in Table 2 to enable direct comparison between the current dataset and published signatures. The majority of tracked genes originated from modules L5 and L7, which were previously associated with interferon-driven inflammatory responses and innate immune activation during pulmonary Toxoplasma infection.
 
 ## 3. Results
 
 ### 3.1 Quality control and read alignment
 
-Quality control of the raw sequencing data was performed using MultiQC. Assignment rates ranged from 64 to 76 % for 14 samples, while one sample exhibited a lower assignment rate of 59.9 %. Overall sequence quality metrics were high and no major outlier samples were detected. However, *Per Base Sequence Content* analysis revealed pronounced nucleotide composition bias at the beginning of reads across all samples. Specifically, the first \~10–15 bases showed strong deviations from equal base representation, after which nucleotide frequencies stabilized along the remainder of the read length. This pattern was consistent across all libraries and is characteristic of RNA-seq data, likely reflecting library preparation–associated biases rather than technical artifacts. Consequently, all samples were retained for downstream analyses. The full MultiQC report is available in the GitHub repository at `results/multiqc_report_1.html`.
+Quality control of the raw sequencing data was performed using MultiQC. Assignment rates ranged from 64 to 76 % for 14 samples, while one sample exhibited a lower assignment rate of 59.9 %. Across samples, sequencing depth was high, with between \~30 and 47 million reads per library, and one sample reaching approximately 55 million reads. Overall sequence quality metrics were high and no major outlier samples were detected. However, Per Base Sequence Content analysis revealed pronounced nucleotide composition bias at the beginning of reads across all samples. Specifically, the first \~10–15 bases showed strong deviations from equal base representation, after which nucleotide frequencies stabilized along the remainder of the read length. This pattern was consistent across all libraries and is characteristic of RNA-seq data. FeatureCounts and general alignment statistics indicated consistently high assignment rates across samples, with the majority of reads being uniquely assigned to annotated genomic features. A moderate fraction of multimapping reads was observed, which is expected given shared sequence similarity among gene families and repetitive regions. No additional filtering based on alignment or multimapping statistics was applied for downstream differential expression analyses. Consequently, all samples were retained for downstream analyses. The full MultiQC report is available in the GitHub repository at `results/multiqc_report_1.html`.
 
 ### 3.2 Exploratory data analysis
 
@@ -529,8 +524,6 @@ summary_DE <- data.frame(
 )
 ```
 
-\FloatBarrier
-
 ### 3.3 Differential gene expression analysis
 
 As summarised in @tbl-DE-genes, infection induced widespread transcriptional changes in lung tissue in both WT and DKO mice, with more than 10,000 genes showing significant differential expression in each genotype. In contrast, the direct comparison between infected WT and infected DKO samples yielded a smaller, yet substantial, set of differentially expressed genes, indicating genotype-dependent differences in transcriptional responses specifically under infectious conditions.
@@ -554,10 +547,11 @@ summary_DE |>
   ) |>
   knitr::kable(
     format = "latex",
-    booktabs = TRUE
+    booktabs = TRUE,
+    longtable = TRUE
   ) |>
   kableExtra::kable_styling(
-    latex_options = c("HOLD_position", "striped", "scale_down"),
+    latex_options = c("striped","repeat_header"),
     font_size = 9
   )
 
@@ -751,13 +745,11 @@ barplot_ego_WT_DKO_con_BP_s <- barplot(ego_WT_DKO_con_BP_s, showCategory = 10) +
   theme(axis.text.y = element_text(size = 20))
 ```
 
-
 Gene Ontology (GO) enrichment analysis was performed on the sets of significantly differentially expressed genes to identify biological processes associated with infection- and genotype-dependent transcriptional changes (@fig-go-bp-barplots). In WT mice in @fig-go-bp-barplots (a), enriched Biological Process terms were predominantly related to immune activation, including leukocyte migration, chemotaxis, regulation of innate immune responses, and responses to biotic stimuli. These categories reflect a coordinated immune response to Toxoplasma gondii infection in lung tissue.
 
 In DKO mice (@fig-go-bp-barplots b), the enrichment profile differed from that observed in WT animals. In addition to leukocyte migration and cell–cell adhesion, terms associated with cytoskeletal organisation, muscle system processes, and wound healing were prominent, indicating an altered functional response to infection in the absence of type I and type II interferon signalling.
 
 The direct comparison between infected WT and infected DKO samples (@fig-go-bp-barplots c) revealed enrichment of GO terms related to regulation of inflammatory responses, immune effector processes, chemotaxis, and cell activation. These enriched categories highlight genotype-dependent differences in the functional organisation of infection-induced transcriptional responses. Only the most significant non-redundant GO terms are shown following semantic similarity-based simplification.
-
 
 ```{r}
 #| label: fig-go-bp-barplots
@@ -781,12 +773,9 @@ barplot_ego_WT_DKO_BP_s
 
 ```
 
-
-
 ### 3.5 Comparison to Singhania et al.
 
 @tbl-important-genes highlights a subset of representative genes that are significantly differentially expressed across the analysed contrasts. The selected genes include multiple interferon-stimulated and immune-related transcripts, such as Tap1, Stat2, Irf7, and several Gbp family members, which show strong regulation upon infection. In addition, the direct comparison between infected WT and infected DKO samples reveals pronounced genotype-dependent differences for key immune effector genes. These examples illustrate how disruption of type I and type II interferon signalling alters infection-induced transcriptional responses in lung tissue.
-
 
 ```{r}
 #| label: tbl-important-genes
